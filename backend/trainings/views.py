@@ -32,7 +32,6 @@ class HomeworkViewSet(viewsets.ModelViewSet):
     serializer_class = HomeworkSerializer
 
     def get_permissions(self):
-        # создание/редактирование домашки — только тренер
         if self.action in ["create","update","partial_update","destroy"]:
             return [IsAuthenticated(), IsCoach()]
         return [IsAuthenticatedOrReadOnly()]
@@ -42,7 +41,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     serializer_class = AttendanceSerializer
 
     def get_permissions(self):
-        # запись посещаемости — тренер; просмотр — любой аутентифицированный
         if self.action in ["create","update","partial_update","destroy"]:
             return [IsAuthenticated(), IsCoach()]
         return [IsAuthenticatedOrReadOnly()]

@@ -8,17 +8,12 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
 
 DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
-
-# ==============================
-# Applications
-# ==============================
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -48,24 +43,12 @@ MIDDLEWARE = [
 ]
 
 
-# ==============================
-# CORS
-# ==============================
-
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 
-# ==============================
-# Custom user model
-# ==============================
-
 AUTH_USER_MODEL = "accounts.User"
 
-
-# ==============================
-# Django REST Framework & JWT
-# ==============================
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -82,11 +65,6 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
-
-
-# ==============================
-# Template settings
-# ==============================
 
 ROOT_URLCONF = 'config.urls'
 
@@ -108,10 +86,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-# ==============================
-# Database
-# ==============================
-
 # if os.getenv("USE_SQLITE") == "True":
 DATABASES = {
     'default': {
@@ -132,11 +106,6 @@ DATABASES = {
 #    }
 #    print("Use PostgreSQL")
 
-
-# ==============================
-# Password validation
-# ==============================
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -153,20 +122,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# ==============================
-# Internationalization
-# ==============================
-
 LANGUAGE_CODE = 'ru-ru'
 TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 USE_TZ = True
 
-
-# ==============================
-# Static & Media
-# ==============================
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "static"

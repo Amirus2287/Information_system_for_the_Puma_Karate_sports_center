@@ -23,25 +23,21 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ("id","username","email","first_name","last_name","phone","is_coach","is_student","is_active")
 
-# Achievement
 class AchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Achievement
         fields = "__all__"
 
-# Profile
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = "__all__"
 
-# News
 class NewsSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = "__all__"
 
-# ClubTeam
 class ClubTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClubTeam

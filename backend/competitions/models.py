@@ -3,10 +3,6 @@ from django.conf import settings
 
 User = settings.AUTH_USER_MODEL
 
-
-# ===========================
-# COMPETITION (соревнование)
-# ===========================
 class Competition(models.Model):
     name = models.CharField(max_length=255)
     location = models.CharField(max_length=255)
@@ -17,10 +13,6 @@ class Competition(models.Model):
     def __str__(self):
         return self.name
 
-
-# ===========================
-# CATEGORY (вес/возраст)
-# ===========================
 class CompetitionCategory(models.Model):
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
@@ -34,10 +26,6 @@ class CompetitionCategory(models.Model):
     def __str__(self):
         return f"{self.name} ({self.competition.name})"
 
-
-# ===========================================
-# УЧАСТИЕ СТУДЕНТА В СОРЕВНОВАНИИ
-# ===========================================
 class CompetitionRegistration(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE)
@@ -49,10 +37,6 @@ class CompetitionRegistration(models.Model):
     def __str__(self):
         return f"{self.user} — {self.competition}"
 
-
-# ===========================================
-# РЕЗУЛЬТАТ СТУДЕНТА
-# ===========================================
 class CompetitionResult(models.Model):
     registration = models.OneToOneField(CompetitionRegistration, on_delete=models.CASCADE)
 
@@ -63,10 +47,6 @@ class CompetitionResult(models.Model):
     def __str__(self):
         return f"{self.registration.user}: {self.place} место"
 
-
-# ===========================================
-# РЕЗУЛЬТАТ КОМАНДЫ
-# ===========================================
 class TeamCompetitionResult(models.Model):
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE)
     team_name = models.CharField(max_length=255)

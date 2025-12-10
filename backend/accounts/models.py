@@ -1,10 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-
-# ===========================
-# CUSTOM USER
-# ===========================
 class User(AbstractUser):
     phone = models.CharField(max_length=20, blank=True, null=True)
     is_coach = models.BooleanField(default=False)
@@ -16,10 +12,6 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.first_name} {self.last_name}".strip()
 
-
-# ===========================
-# ACHIEVMENTS
-# ===========================
 class Achievement(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
@@ -29,10 +21,6 @@ class Achievement(models.Model):
     def __str__(self):
         return self.title
 
-
-# ===========================
-# PROFILES
-# ===========================
 class Profile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     achievement = models.ForeignKey(Achievement, on_delete=models.SET_NULL, null=True, blank=True)
@@ -43,10 +31,6 @@ class Profile(models.Model):
     def __str__(self):
         return self.specialization
 
-
-# ===========================
-# NEWS
-# ===========================
 class News(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
@@ -57,10 +41,6 @@ class News(models.Model):
     def __str__(self):
         return self.title
 
-
-# ===========================
-# CLUB TEAM
-# ===========================
 class ClubTeam(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     achievements = models.TextField(blank=True)

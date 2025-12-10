@@ -25,7 +25,6 @@ class CompetitionRegistrationViewSet(viewsets.ModelViewSet):
     serializer_class = CompetitionRegistrationSerializer
 
     def get_permissions(self):
-        # Регистрация: только аутентифицированный пользователь
         if self.action in ["create"]:
             return [IsAuthenticated()]
         return [IsAuthenticatedOrReadOnly()]
@@ -35,7 +34,6 @@ class CompetitionResultViewSet(viewsets.ModelViewSet):
     serializer_class = CompetitionResultSerializer
 
     def get_permissions(self):
-        # Запись результата — тренер (или админ)
         if self.action in ["create","update","partial_update","destroy"]:
             return [IsAuthenticated(), IsCoach()]
         return [IsAuthenticatedOrReadOnly()]
