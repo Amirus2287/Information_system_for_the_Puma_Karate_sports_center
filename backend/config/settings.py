@@ -23,7 +23,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "rest_framework",
     "rest_framework.authtoken",
+    'drf_yasg', #Open-API спецификация (типа Swagger)
+
     "rest_framework_simplejwt",
+    
     "corsheaders",
     'accounts',
     'competitions',
@@ -136,3 +139,14 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SWAGGER_SETTINGS = { # Настройки Open-API спецификации
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+    'USE_SESSION_AUTH': False,
+}

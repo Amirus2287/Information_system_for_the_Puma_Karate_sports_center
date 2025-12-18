@@ -16,10 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from swagger.swagger import schema_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/accounts/", include("accounts.urls")),
     path("api/trainings/", include("trainings.urls")),
     path("api/competitions/", include("competitions.urls")),
+    path('swagger/', # http://127.0.0.1:8000/swagger Путь к Open-API спецификации
+         schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+
 ]
