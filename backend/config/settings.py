@@ -9,8 +9,7 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
-
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -86,25 +85,25 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-# if os.getenv("USE_SQLITE") == "True":
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'temp.db',
+if os.getenv("USE_SQLITE") == "True":
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'temp.db',
     }
 }
-#else:
-#    DATABASES = {
-#        'default': {
-#            'ENGINE': 'django.db.backends.postgresql',
-#            'NAME': os.getenv("DB_NAME"),
-#            'USER': os.getenv("DB_USER"),
-#            'PASSWORD': os.getenv("DB_PASSWORD"),
-#            'HOST': os.getenv("DB_HOST"),
-#            'PORT': os.getenv("DB_PORT"),
-#        }
-#    }
-#    print("Use PostgreSQL")
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv("DB_NAME"),
+            'USER': os.getenv("DB_USER"),
+            'PASSWORD': os.getenv("DB_PASSWORD"),
+            'HOST': os.getenv("DB_HOST"),
+            'PORT': os.getenv("DB_PORT"),
+        }
+    }
+    print("Use PostgreSQL")
 
 AUTH_PASSWORD_VALIDATORS = [
     {
