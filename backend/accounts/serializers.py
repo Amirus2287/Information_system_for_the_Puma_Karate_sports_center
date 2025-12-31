@@ -1,44 +1,56 @@
+# accounts/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Achievement, Profile, News, ClubTeam
+from .models import User, Profile, Achievement, News, ClubTeam  # <-- Важно: импорт ClubTeam
 
 User = get_user_model()
 
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=6)
-
-    class Meta:
-        model = User
-        fields = ("id","username","email","password","first_name","last_name","phone","is_coach","is_student")
-
-    def create(self, validated_data):
-        password = validated_data.pop("password")
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id","username","email","first_name","last_name","phone","is_coach","is_student","is_active")
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 
+                 'phone', 'telegram_id', 'is_coach', 'is_student', 
+                 'date_of_birth', 'avatar', 'is_active']
+        read_only_fields = ['id', 'is_active']
 
-class AchievementSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Achievement
-        fields = "__all__"
 
 class ProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    
     class Meta:
         model = Profile
-        fields = "__all__"
+        fields = ['id', 'user', 'bio', 'location', 'grade', 'years_of_practice',
+                 'parent_name', 'parent_phone', 'medical_notes',
+                 'competitions_participated', 'competitions_won',
+                 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class AchievementSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    
+    class Meta:
+        model = Achievement
+        fields = ['id', 'user', 'user_name', 'title', 'description', 'date']
+        read_only_fields = ['id']
+
 
 class NewsSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source='author.get_full_name', read_only=True)
+    
     class Meta:
         model = News
-        fields = "__all__"
+        fields = ['id', 'author', 'author_name', 'title', 'content', 'image', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
 
 class ClubTeamSerializer(serializers.ModelSerializer):
+    coach_name = serializers.CharField(source='coach.get_full_name', read_only=True)
+    student_count = serializers.IntegerField(read_only=True)
+    
     class Meta:
-        model = ClubTeam
-        fields = "__all__"
+        model = ClubTeam  # <-- Теперь модель определена
+        fields = ['id', 'name', 'coach', 'coach_name', 'students', 
+                 'student_count', 'description', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']

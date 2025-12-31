@@ -16,14 +16,29 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from swagger.swagger import schema_view
+from django.conf import settings
+from django.conf.urls.static import static
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Puma Karate API",
+        default_version='v1',
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
+)
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("api/accounts/", include("accounts.urls")),
-    path("api/trainings/", include("trainings.urls")),
-    path("api/competitions/", include("competitions.urls")),
-    path('swagger/', # http://127.0.0.1:8000/swagger Путь к Open-API спецификации
-         schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-
+    path('admin/', admin.site.urls),
+    path('api/auth/', include('accounts.urls')),
+    path('api/competitions/', include('competitions.urls')),
+    path('api/trainings/', include('trainings.urls')),
+    path('api/journal/', include('journal.urls')),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

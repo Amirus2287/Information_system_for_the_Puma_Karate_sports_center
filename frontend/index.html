@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пума-Каратэ | Спортивный центр</title>
+    <meta name="description" content="Информационная система спортивного центра Пума-Каратэ">
+    <meta name="keywords" content="каратэ, спорт, тренировки, соревнования, спортклуб">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Пума-Каратэ | Спортивный центр">
+    <meta property="og:description" content="Информационная система для управления тренировками, соревнованиями и электронным журналом">
+    <meta property="og:image" content="/og-image.jpg">
+    <meta property="og:type" content="website">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1976d2">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            color: white;
+        }
+
+        h1 {
+            color: white;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 35px 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            color: white;
+            font-size: 24px;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .card p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            font-size: 1rem;
+        }
+
+        .features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .features li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #4a5568;
+        }
+
+        .features li::before {
+            content: "✓";
+            color: #48bb78;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .button-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .button-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .tech-stack {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .tech-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+
+        .tech-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            backdrop-filter: blur(5px);
+        }
+
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .button {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 25px 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: none;
+            align-items: center;
+            gap: 15px;
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.success {
+            border-left: 4px solid #48bb78;
+        }
+
+        .notification.error {
+            border-left: 4px solid #f56565;
+        }
+
+        .notification-icon {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading" id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <div>Загрузка системы...</div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <span class="notification-icon">🔔</span>
+        <span id="notificationMessage"></span>
+    </div>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="logo">
+                <span class="logo-icon">🥋</span>
+            </div>
+            <h1>Пума-Каратэ</h1>
+            <p class="subtitle">
+                Информационная система для автоматизации тренировочного процесса, 
+                управления соревнованиями и ведения электронного журнала спортивного центра
+            </p>
+            
+            <div class="buttons">
+                <a href="/auth" class="button" id="loginBtn">
+                    Войти в систему
+                </a>
+                <a href="#features" class="button button-secondary" id="featuresBtn">
+                    Возможности
+                </a>
+            </div>
+        </div>
+
+        <!-- Features Cards -->
+        <div class="cards" id="features">
+            <div class="card">
+                <div class="card-icon">📊</div>
+                <h3>Электронный журнал</h3>
+                <p>Ведение подробных записей о тренировках, оценка техники, ката и кумите, видео-анализ выполнения упражнений.</p>
+                <ul class="features">
+                    <li>Отслеживание прогресса учеников</li>
+                    <li>Заметки тренера о технике</li>
+                    <li>Видео записи тренировок</li>
+                    <li>Автоматическая статистика</li>
+                </ul>
+                <button class="button" onclick="showNotification('Электронный журнал доступен после авторизации', 'success')">
+                    Перейти к журналу
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">🏆</div>
+                <h3>Соревнования</h3>
+                <p>Полный цикл организации соревнований: регистрация участников, формирование категорий, ведение результатов.</p>
+                <ul class="features">
+                    <li>Онлайн-регистрация участников</li>
+                    <li>Автоматическое распределение по категориям</li>
+                    <li>Ведение результатов в реальном времени</li>
+                    <li>Формирование протоколов</li>
+                </ul>
+                <button class="button" onclick="showNotification('Раздел соревнований загружается...', 'success')">
+                    Посмотреть соревнования
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">📅</div>
+                <h3>Тренировки</h3>
+                <p>Управление расписанием, группами, посещаемостью и домашними заданиями. Уведомления через Telegram.</p>
+                <ul class="features">
+                    <li>Расписание тренировок онлайн</li>
+                    <li>Отметка посещаемости</li>
+                    <li>Домашние задания для учеников</li>
+                    <li>Уведомления о тренировках</li>
+                </ul>
+                <button class="button" onclick="showNotification('Расписание тренировок обновляется...', 'success')">
+                    Открыть расписание
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">👥</div>
+                <h3>Профили и аналитика</h3>
+                <p>Личные кабинеты для учеников, тренеров и администраторов. Детальная статистика и аналитика прогресса.</p>
+                <ul class="features">
+                    <li>Персональные профили пользователей</li>
+                    <li>Графики прогресса обучения</li>
+                    <li>Достижения и награды</li>
+                    <li>Отчеты для родителей</li>
+                </ul>
+                <button class="button" onclick="showNotification('Аналитика доступна в личном кабинете', 'success')">
+                    Посмотреть аналитику
+                </button>
+            </div>
+        </div>
+
+        <!-- Tech Stack -->
+        <div class="tech-stack">
+            <div class="tech-item">
+                <div class="tech-icon">⚛️</div>
+                <span>React + TypeScript</span>
+            </div>
+            <div class="tech-item">
+                <div class="tech-icon">🐍</div>
+                <span>Django + DRF</span>
+            </div>
+            <div class="tech-item">
+                <div class="tech-icon">🚀</div>
+                <span>Bun + Vite</span>
+            </div>
+            <div class="tech-item">
+                <div class="tech-icon">🗄️</div>
+                <span>PostgreSQL</span>
+            </div>
+            <div class="tech-item">
+                <div class="tech-icon">📱</div>
+                <span>Tailwind CSS</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2024 Спортивный центр "Пума-Каратэ". Все права защищены.</p>
+        <p>Контакты: Москва, ул. Спортивная, 15 | 📞 +7 (495) 123-45-67 | ✉️ info@pumakarate.ru</p>
+    </footer>
+
+    <script>
+        // Симуляция загрузки
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const loginBtn = document.getElementById('loginBtn');
+            const notification = document.getElementById('notification');
+            const notificationMessage = document.getElementById('notificationMessage');
+            
+            // Показать загрузку на 2 секунды
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 300);
+            }, 2000);
+            
+            // Обработка кнопки входа
+            loginBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                showNotification('Перенаправление на страницу авторизации...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/auth';
+                }, 1000);
+            });
+            
+            // Плавный скролл к функциям
+            document.getElementById('featuresBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('features').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Добавить анимацию карточкам при появлении
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                observer.observe(card);
+            });
+            
+            // Функция показа уведомлений
+            window.showNotification = function(message, type = 'success') {
+                notificationMessage.textContent = message;
+                notification.className = `notification ${type}`;
+                notification.style.display = 'flex';
+                
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => {
+                        notification.style.display = 'none';
+                        notification.style.opacity = '1';
+                    }, 300);
+                }, 3000);
+            };
+            
+            // Проверка доступности бэкенда
+            async function checkBackend() {
+                try {
+                    const response = await fetch('http://localhost:8000/api/', {
+                        method: 'GET',
+                        mode: 'no-cors'
+                    });
+                    console.log('Бэкенд доступен');
+                } catch (error) {
+                    console.warn('Бэкенд недоступен. Запустите Django сервер.');
+                    showNotification('⚠️ Бэкенд сервер не запущен. Запустите: python manage.py runserver', 'error');
+                }
+            }
+            
+            // Проверить бэкенд через 3 секунды после загрузки
+            setTimeout(checkBackend, 3000);
+            
+            // Добавить клавиатурные сокращения
+            document.addEventListener('keydown', function(e) {
+                // Ctrl + L = вход
+                if (e.ctrlKey && e.key === 'l') {
+                    e.preventDefault();
+                    loginBtn.click();
+                }
+                
+                // Esc = закрыть уведомление
+                if (e.key === 'Escape') {
+                    notification.style.display = 'none';
+                }
+            });
+            
+            // Анимация логотипа
+            const logo = document.querySelector('.logo');
+            logo.addEventListener('mouseenter', () => {
+                logo.style.transform = 'scale(1.1) rotate(10deg)';
+            });
+            
+            logo.addEventListener('mouseleave', () => {
+                logo.style.transform = 'scale(1) rotate(0deg)';
+            });
+            
+            // Добавить текущую дату в консоль
+            console.log(`Пума-Каратэ | Запуск системы: ${new Date().toLocaleString('ru-RU')}`);
+            
+            // Service Worker для PWA (если нужно)
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker зарегистрирован:', reg))
+                    .catch(err => console.log('Service Worker ошибка:', err));
+            }
+        });
+    </script>
+</body>
+</html>

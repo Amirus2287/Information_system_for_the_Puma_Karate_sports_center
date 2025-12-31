@@ -1,46 +1,28 @@
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from .models import Gym, Group, GroupStudent, Training, Homework, Attendance
-from .serializers import (
-    GymSerializer, GroupSerializer, GroupStudentSerializer,
-    TrainingSerializer, HomeworkSerializer, AttendanceSerializer
-)
-from accounts.permissions import IsCoach, IsStudent
+from rest_framework import viewsets, permissions
+from .models import Gym, Group, Training, Homework, Attendance
+from .serializers import GymSerializer, GroupSerializer, TrainingSerializer, HomeworkSerializer, AttendanceSerializer
 
 class GymViewSet(viewsets.ModelViewSet):
     queryset = Gym.objects.all()
     serializer_class = GymSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-class GroupStudentViewSet(viewsets.ModelViewSet):
-    queryset = GroupStudent.objects.all()
-    serializer_class = GroupStudentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class TrainingViewSet(viewsets.ModelViewSet):
     queryset = Training.objects.all()
     serializer_class = TrainingSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class HomeworkViewSet(viewsets.ModelViewSet):
     queryset = Homework.objects.all()
     serializer_class = HomeworkSerializer
-
-    def get_permissions(self):
-        if self.action in ["create","update","partial_update","destroy"]:
-            return [IsAuthenticated(), IsCoach()]
-        return [IsAuthenticatedOrReadOnly()]
+    permission_classes = [permissions.IsAuthenticated]
 
 class AttendanceViewSet(viewsets.ModelViewSet):
-    queryset = Attendance.objects.all()
+    queryset = Attendance.objects.all()  # <-- ДОБАВЬТЕ ЭТУ СТРОКУ!
     serializer_class = AttendanceSerializer
-
-    def get_permissions(self):
-        if self.action in ["create","update","partial_update","destroy"]:
-            return [IsAuthenticated(), IsCoach()]
-        return [IsAuthenticatedOrReadOnly()]
+    permission_classes = [permissions.IsAuthenticated]

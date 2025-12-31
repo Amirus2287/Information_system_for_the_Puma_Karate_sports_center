@@ -1,44 +1,28 @@
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-from .models import (
-    Competition, CompetitionCategory,
-    CompetitionRegistration, CompetitionResult, TeamCompetitionResult
-)
-from .serializers import (
-    CompetitionSerializer, CompetitionCategorySerializer,
-    CompetitionRegistrationSerializer, CompetitionResultSerializer, TeamCompetitionResultSerializer
-)
-from accounts.permissions import IsCoach, IsStudent
+from rest_framework import viewsets, permissions
+from .models import Competition, CompetitionCategory, CompetitionRegistration, CompetitionResult, TeamCompetitionResult
+from .serializers import CompetitionSerializer, CompetitionCategorySerializer, CompetitionRegistrationSerializer, CompetitionResultSerializer, TeamCompetitionResultSerializer
 
 class CompetitionViewSet(viewsets.ModelViewSet):
     queryset = Competition.objects.all()
     serializer_class = CompetitionSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class CompetitionCategoryViewSet(viewsets.ModelViewSet):
     queryset = CompetitionCategory.objects.all()
     serializer_class = CompetitionCategorySerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class CompetitionRegistrationViewSet(viewsets.ModelViewSet):
     queryset = CompetitionRegistration.objects.all()
     serializer_class = CompetitionRegistrationSerializer
-
-    def get_permissions(self):
-        if self.action in ["create"]:
-            return [IsAuthenticated()]
-        return [IsAuthenticatedOrReadOnly()]
+    permission_classes = [permissions.IsAuthenticated]
 
 class CompetitionResultViewSet(viewsets.ModelViewSet):
     queryset = CompetitionResult.objects.all()
     serializer_class = CompetitionResultSerializer
-
-    def get_permissions(self):
-        if self.action in ["create","update","partial_update","destroy"]:
-            return [IsAuthenticated(), IsCoach()]
-        return [IsAuthenticatedOrReadOnly()]
+    permission_classes = [permissions.IsAuthenticated]
 
 class TeamCompetitionResultViewSet(viewsets.ModelViewSet):
     queryset = TeamCompetitionResult.objects.all()
     serializer_class = TeamCompetitionResultSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]

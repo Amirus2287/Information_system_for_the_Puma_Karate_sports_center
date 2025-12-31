@@ -1,13 +1,99 @@
+# accounts/admin.py
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Achievement, Profile, News, ClubTeam
+from .models import User, Profile, Achievement, News, ClubTeam  # <-- ClubTeam импортирован
 
-@admin.register(User)
+
+class ProfileInline(admin.StackedInline):
+    """Инлайн профиля в админке пользователя"""
+    model = Profile
+    can_delete = False
+    verbose_name_plural = 'Профиль'
+    fk_name = 'user'
+    max_num = 1
+    min_num = 1
+
+
 class UserAdmin(BaseUserAdmin):
-    list_display = ("username","email","first_name","last_name","is_coach","is_student","is_staff")
-    search_fields = ("username","email","first_name","last_name")
+    inlines = (ProfileInline,)
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_coach', 'is_student', 'is_staff')
+    list_filter = ('is_coach', 'is_student', 'is_staff', 'is_superuser', 'is_active')
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Персональная информация', {'fields': ('first_name', 'last_name', 'email', 'phone', 'telegram_id', 'date_of_birth', 'avatar')}),
+        ('Роли', {'fields': ('is_coach', 'is_student')}),
+        ('Разрешения', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Важные даты', {'fields': ('last_login', 'date_joined')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'password1', 'password2', 'is_coach', 'is_student'),
+        }),
+    )
+    search_fields = ('username', 'first_name', 'last_name', 'email')
+    ordering = ('username',)
 
-admin.site.register(Achievement)
-admin.site.register(Profile)
-admin.site.register(News)
-admin.site.register(ClubTeam)
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'grade', 'years_of_practice', 'competitions_participated', 'competitions_won')
+    list_filter = ('grade', 'years_of_practice')
+    search_fields = ('user__username', 'user__first_name', 'user__last_name', 'grade')
+    raw_id_fields = ('user',)
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('user', 'bio', 'location', 'grade', 'years_of_practice')
+        }),
+        ('Информация о родителях (для учеников)', {
+            'fields': ('parent_name', 'parent_phone'),
+            'classes': ('collapse',)
+        }),
+        ('Медицинская информация', {
+            'fields': ('medical_notes',),
+            'classes': ('collapse',)
+        }),
+        ('Спортивные результаты', {
+            'fields': ('competitions_participated', 'competitions_won')
+        }),
+        ('Системная информация', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(Achievement)
+class AchievementAdmin(admin.ModelAdmin):
+    list_display = ('title', 'user', 'date')
+    list_filter = ('date',)
+    search_fields = ('title', 'user__username', 'description')
+    raw_id_fields = ('user',)
+    date_hierarchy = 'date'
+
+
+@admin.register(News)
+class NewsAdmin(admin.ModelAdmin):
+    list_display = ('title', 'author', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('title', 'content', 'author__username')
+    raw_id_fields = ('author',)
+    date_hierarchy = 'created_at'
+
+
+@admin.register(ClubTeam)
+class ClubTeamAdmin(admin.ModelAdmin):
+    list_display = ('name', 'coach', 'student_count_display')
+    list_filter = ('coach',)
+    search_fields = ('name', 'coach__username', 'coach__first_name', 'coach__last_name')
+    filter_horizontal = ('students',)
+    
+    def student_count_display(self, obj):
+        return obj.students.count()
+    student_count_display.short_description = 'Количество учеников'
+
+
+# Регистрируем кастомного пользователя
+admin.site.register(User, UserAdmin)

@@ -1,13 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "backend-of-my-project"
+name = "puma-karate-backend"
 version = "0.1.0"
-description = "pururururururu"
+description = "Django backend for Puma Karate Sports Center"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.8"
 dependencies = [
-    "django>=5.2.7",
-    "django-cors-headers>=4.9.0",
-    "djangorestframework>=3.16.1",
-    "djangorestframework-simplejwt>=5.5.1",
-    "psycopg2-binary>=2.9.11",
+    "Django>=4.2",
+    "djangorestframework",
+    "django-cors-headers",
+    "psycopg2-binary",  # если используете PostgreSQL
 ]
+
+[tool.setuptools]
+packages = [
+    "config",
+    "accounts",
+    "journal",
+    "trainings",
+    "competitions",
+    "notifications",
+]
+
+[tool.setuptools.package-dir]
+"" = "."

@@ -1,49 +1,97 @@
-from rest_framework import viewsets, status, generics
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+# accounts/views.py
+from rest_framework import viewsets, generics, permissions, status
+from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
-from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.views import TokenObtainPairView
-
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate, get_user_model
+from .models import User, Profile, Achievement, News, ClubTeam
 from .serializers import (
-    RegisterSerializer, UserSerializer,
-    AchievementSerializer, ProfileSerializer, NewsSerializer, ClubTeamSerializer
+    UserSerializer, ProfileSerializer, AchievementSerializer, 
+    NewsSerializer, ClubTeamSerializer
 )
-from .models import Achievement, Profile, News, ClubTeam
 
 User = get_user_model()
 
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = RegisterSerializer
-    permission_classes = [AllowAny]
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
 
-class AchievementViewSet(viewsets.ModelViewSet):
-    queryset = Achievement.objects.all()
-    serializer_class = AchievementSerializer
-    permission_classes = [IsAuthenticated]
 
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class AchievementViewSet(viewsets.ModelViewSet):
+    queryset = Achievement.objects.all()
+    serializer_class = AchievementSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
 
 class NewsViewSet(viewsets.ModelViewSet):
-    queryset = News.objects.all().order_by("-created_at")
+    queryset = News.objects.all()
     serializer_class = NewsSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
 
 class ClubTeamViewSet(viewsets.ModelViewSet):
     queryset = ClubTeam.objects.all()
     serializer_class = ClubTeamSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
+
+# Дополнительные View
+class RegisterView(generics.CreateAPIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = UserSerializer
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        if 'password' in request.data:
+            user.set_password(request.data['password'])
+            user.save()
+        
+        # Создаем токен для нового пользователя
+        token, created = Token.objects.get_or_create(user=user)
+        
+        return Response({
+            'user': UserSerializer(user, context=self.get_serializer_context()).data,
+            'token': token.key,
+            'message': 'Пользователь успешно создан'
+        }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def login(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    
+    user = authenticate(username=username, password=password)
+    
+    if user:
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user': UserSerializer(user).data
+        })
+    
+    return Response({'error': 'Неверные учетные данные'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
 def me(request):
-    return Response(UserSerializer(request.user).data)
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)
