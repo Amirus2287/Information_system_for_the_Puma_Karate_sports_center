@@ -13,6 +13,7 @@ const competitionSchema = z.object({
   location: z.string().min(1, 'Введите место проведения'),
   date: z.string(),
   description: z.string().optional(),
+  is_active: z.boolean().optional(),
 })
 
 type CompetitionFormData = z.infer<typeof competitionSchema>
@@ -29,6 +30,7 @@ export default function CompetitionForm({ open, onClose }: CompetitionFormProps)
     resolver: zodResolver(competitionSchema),
     defaultValues: {
       date: new Date().toISOString().split('T')[0],
+      is_active: true,
     },
   })
   
@@ -46,7 +48,13 @@ export default function CompetitionForm({ open, onClose }: CompetitionFormProps)
   }
   
   return (
-    <Dialog open={open} onOpenChange={onClose} title="Новое соревнование">
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose()
+      }} 
+      title="Новое соревнование"
+    >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
           label="Название"
@@ -73,6 +81,18 @@ export default function CompetitionForm({ open, onClose }: CompetitionFormProps)
           error={errors.description?.message}
           rows={3}
         />
+        
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="is_active"
+            {...register('is_active')}
+            className="h-4 w-4 text-primary-600 rounded"
+          />
+          <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">
+            Соревнование активно
+          </label>
+        </div>
         
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose}>

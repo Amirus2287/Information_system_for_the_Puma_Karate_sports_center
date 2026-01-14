@@ -9,6 +9,7 @@ import Trainings from './pages/Trainings'
 import Journal from './pages/Journal'
 import Profile from './pages/Profile'
 import ProtectedRoute from './components/auth/ProtectedRoute'
+import Home from './pages/Home' // Убедитесь, что создали этот файл
 
 const queryClient = new QueryClient()
 
@@ -18,10 +19,11 @@ export default function App() {
       <BrowserRouter>
         <Toaster position="top-right" />
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/auth" element={<Auth />} />
+          
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
-              <Route index element={<Navigate to="/dashboard" />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/competitions" element={<Competitions />} />
               <Route path="/trainings" element={<Trainings />} />
@@ -29,6 +31,8 @@ export default function App() {
               <Route path="/profile" element={<Profile />} />
             </Route>
           </Route>
+          
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

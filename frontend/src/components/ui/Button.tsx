@@ -2,31 +2,28 @@ import { forwardRef } from 'react'
 import { cn } from '../../lib/utils'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
-  size?: 'default' | 'sm' | 'lg' | 'icon'
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
+  size?: 'sm' | 'md' | 'lg'
   loading?: boolean
   leftIcon?: React.ReactNode
+  rightIcon?: React.ReactNode
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'default', size = 'default', loading, leftIcon, children, ...props }, ref) => {
+  ({ className, variant = 'primary', size = 'md', loading, leftIcon, rightIcon, children, ...props }, ref) => {
     return (
       <button
         className={cn(
-          'inline-flex items-center justify-center rounded-md font-medium transition-colors',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-          'disabled:opacity-50 disabled:pointer-events-none',
+          'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
           {
-            'bg-blue-600 text-white hover:bg-blue-700': variant === 'default',
-            'bg-red-600 text-white hover:bg-red-700': variant === 'destructive',
-            'border border-gray-300 bg-transparent hover:bg-gray-100': variant === 'outline',
-            'bg-gray-100 text-gray-900 hover:bg-gray-200': variant === 'secondary',
-            'hover:bg-gray-100 hover:text-gray-900': variant === 'ghost',
-            'text-blue-600 underline-offset-4 hover:underline': variant === 'link',
-            'h-10 px-4 py-2': size === 'default',
-            'h-9 px-3': size === 'sm',
-            'h-11 px-8': size === 'lg',
-            'h-10 w-10': size === 'icon',
+            'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500': variant === 'primary',
+            'bg-white text-primary-500 border border-primary-500 hover:bg-primary-50 focus:ring-primary-500': variant === 'secondary',
+            'border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 focus:ring-gray-500': variant === 'outline',
+            'text-gray-700 hover:bg-gray-100 focus:ring-gray-500': variant === 'ghost',
+            'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500': variant === 'danger',
+            'px-3 py-1.5 text-sm': size === 'sm',
+            'px-4 py-2.5': size === 'md',
+            'px-6 py-3 text-lg': size === 'lg',
           },
           className
         )}
@@ -40,8 +37,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
         )}
-        {leftIcon && !loading && <span className="mr-2">{leftIcon}</span>}
+        {!loading && leftIcon && <span className="mr-2">{leftIcon}</span>}
         {children}
+        {rightIcon && <span className="ml-2">{rightIcon}</span>}
       </button>
     )
   }

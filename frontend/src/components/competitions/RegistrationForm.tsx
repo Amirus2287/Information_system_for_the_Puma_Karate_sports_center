@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { competitionsApi } from '../../api/competitions'
 import Dialog from '../ui/Dialog'
@@ -18,7 +17,7 @@ export default function RegistrationForm({ open, onClose, competitionId }: Regis
   
   const { data: categories } = useQuery({
     queryKey: ['competition-categories', competitionId],
-    queryFn: () => competitionsApi.getCompetitions(),
+    queryFn: () => competitionsApi.getCategories(competitionId),
   })
   
   const mutation = useMutation({
@@ -28,6 +27,7 @@ export default function RegistrationForm({ open, onClose, competitionId }: Regis
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['competitions'] })
+      queryClient.invalidateQueries({ queryKey: ['user-competition-registrations'] })
       onClose()
     },
   })
@@ -40,7 +40,13 @@ export default function RegistrationForm({ open, onClose, competitionId }: Regis
   }
   
   return (
-    <Dialog open={open} onOpenChange={onClose} title="Регистрация на соревнование">
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose()
+      }} 
+      title="Регистрация на соревнование"
+    >
       <form onSubmit={handleSubmit} className="space-y-4">
         <Select
           label="Категория"

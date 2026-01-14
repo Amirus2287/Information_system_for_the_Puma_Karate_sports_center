@@ -12,7 +12,8 @@ dependencies = [
     "Django>=4.2",
     "djangorestframework",
     "django-cors-headers",
-    "psycopg2-binary",  # если используете PostgreSQL
+    "psycopg2-binary", # если используете PostgreSQL
+    "django-filter>=24.3",
 ]
 
 [tool.setuptools]

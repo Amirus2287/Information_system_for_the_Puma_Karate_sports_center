@@ -14,13 +14,17 @@ export const competitionsApi = {
   
   getCategories: async (competitionId?: number): Promise<CompetitionCategory[]> => {
     const response = await api.get('/competitions/categories/', {
-      params: { competition_id: competitionId }
+      params: competitionId ? { competition_id: competitionId } : {}
     })
     return response.data
   },
   
-  createCompetition: async (data: Omit<Competition, 'id'>): Promise<Competition> => {
-    const response = await api.post('/competitions/competitions/', data)
+  // Для создания соревнования сделаем все поля опциональными, кроме обязательных
+  createCompetition: async (data: Partial<Competition> & { name: string; location: string; date: string }): Promise<Competition> => {
+    const response = await api.post('/competitions/competitions/', {
+      ...data,
+      is_active: data.is_active ?? true  // По умолчанию активно
+    })
     return response.data
   },
   
@@ -29,7 +33,8 @@ export const competitionsApi = {
     return response.data
   },
   
-  registerForCompetition: async (data: Omit<CompetitionRegistration, 'id' | 'registered_at' | 'is_confirmed'>): Promise<CompetitionRegistration> => {
+  // Для регистрации user будет добавлен на бэкенде из токена
+  registerForCompetition: async (data: { competition: number; category: number }): Promise<CompetitionRegistration> => {
     const response = await api.post('/competitions/registrations/', data)
     return response.data
   },
