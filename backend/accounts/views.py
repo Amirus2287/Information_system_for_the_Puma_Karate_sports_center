@@ -2,7 +2,6 @@
 from rest_framework import viewsets, generics, permissions, status
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, get_user_model
 from .models import User, Profile, Achievement, News, ClubTeam
 from .serializers import (
@@ -58,16 +57,14 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
-        if 'password' in request.data:
-            user.set_password(request.data['password'])
-            user.save()
-        
-        # Создаем токен для нового пользователя
-        token, created = Token.objects.get_or_create(user=user)
+        # Создаем JWT токен для нового пользователя
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
         
         return Response({
             'user': UserSerializer(user, context=self.get_serializer_context()).data,
-            'token': token.key,
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
             'message': 'Пользователь успешно создан'
         }, status=status.HTTP_201_CREATED)
 

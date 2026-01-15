@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { authApi } from '../api/auth'
 import { useAuth } from '../hooks/useAuth'
 import LoginForm from '../components/auth/LoginForm'
@@ -16,17 +17,29 @@ export default function Auth() {
       await authApi.login(data.username, data.password)
       const user = await authApi.getMe()
       setUser(user)
+      toast.success('Вход выполнен успешно!')
       navigate('/dashboard')
-    } catch (error) {
+    } catch (error: any) {
+      // Ошибка уже обработана в authApi.login
       console.error('Login error:', error)
     }
   }
   
   const handleRegister = async (data: any) => {
     try {
-      await authApi.register(data)
-      await handleLogin({ username: data.username, password: data.password })
-    } catch (error) {
+      const registerResponse = await authApi.register(data)
+      
+      // Если регистрация вернула пользователя, используем его
+      if (registerResponse.user) {
+        setUser(registerResponse.user)
+        toast.success('Регистрация успешна!')
+        navigate('/dashboard')
+      } else {
+        // Иначе пытаемся войти через JWT endpoint
+        await handleLogin({ username: data.username, password: data.password })
+      }
+    } catch (error: any) {
+      // Ошибка уже обработана в authApi.register
       console.error('Register error:', error)
     }
   }

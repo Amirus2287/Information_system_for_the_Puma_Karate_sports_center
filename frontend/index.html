@@ -26,18 +26,25 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
             min-height: 100vh;
+            color: #333;
+        }
+
+        body.loading {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            color: #333;
         }
 
         .loading-container {
             text-align: center;
             max-width: 600px;
             width: 100%;
+        }
+
+        .loading-container.hidden {
+            display: none;
         }
 
         .logo {
@@ -126,7 +133,7 @@
         }
     </style>
 </head>
-<body>
+<body class="loading">
     <div class="loading-container">
         <div class="logo">
             <span class="logo-icon">🥋</span>
@@ -158,9 +165,32 @@
     <script type="module" src="/src/main.tsx"></script>
     
     <script>
+        // Функция для скрытия экрана загрузки
+        function hideLoading() {
+            const loadingContainer = document.querySelector('.loading-container');
+            if (loadingContainer) {
+                loadingContainer.classList.add('hidden');
+            }
+            document.body.classList.remove('loading');
+        }
+
+        // Скрываем загрузку после монтирования React приложения
+        // Проверяем каждые 100мс, пока не появится контент в root
+        const checkInterval = setInterval(() => {
+            const root = document.getElementById('root');
+            if (root && root.children.length > 0) {
+                clearInterval(checkInterval);
+                // Небольшая задержка для плавного перехода
+                setTimeout(hideLoading, 100);
+            }
+        }, 100);
+
         // Показываем ошибку если приложение не загрузилось за 10 секунд
         setTimeout(() => {
-            document.getElementById('errorMessage').style.display = 'block';
+            const loadingContainer = document.querySelector('.loading-container');
+            if (loadingContainer && !loadingContainer.classList.contains('hidden')) {
+                document.getElementById('errorMessage').style.display = 'block';
+            }
         }, 10000);
         
         // Проверяем доступность API
