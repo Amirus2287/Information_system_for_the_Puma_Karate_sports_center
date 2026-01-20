@@ -17,6 +17,12 @@ class User(AbstractUser):
     
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+    
+    def save(self, *args, **kwargs):
+        # Если пользователь администратор, автоматически делаем его тренером
+        if self.is_staff:
+            self.is_coach = True
+        super().save(*args, **kwargs)
 
 
 class Profile(models.Model):

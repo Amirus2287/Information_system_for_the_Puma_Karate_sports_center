@@ -3,39 +3,37 @@ import type { Competition, CompetitionCategory, CompetitionRegistration } from '
 
 export const competitionsApi = {
   getCompetitions: async (): Promise<Competition[]> => {
-    const response = await api.get('/competitions/competitions/')
+    const response = await api.get('/api/competitions/competitions/')
     return response.data
   },
   
   getCompetition: async (id: number): Promise<Competition> => {
-    const response = await api.get(`/competitions/competitions/${id}/`)
+    const response = await api.get(`/api/competitions/competitions/${id}/`)
     return response.data
   },
   
   getCategories: async (competitionId?: number): Promise<CompetitionCategory[]> => {
-    const response = await api.get('/competitions/categories/', {
+    const response = await api.get('/api/competitions/categories/', {
       params: competitionId ? { competition_id: competitionId } : {}
     })
     return response.data
   },
   
-  // Для создания соревнования сделаем все поля опциональными, кроме обязательных
   createCompetition: async (data: Partial<Competition> & { name: string; location: string; date: string }): Promise<Competition> => {
-    const response = await api.post('/competitions/competitions/', {
+    const response = await api.post('/api/competitions/competitions/', {
       ...data,
-      is_active: data.is_active ?? true  // По умолчанию активно
+      is_active: data.is_active ?? true
     })
     return response.data
   },
   
   getRegistrations: async (params?: any): Promise<CompetitionRegistration[]> => {
-    const response = await api.get('/competitions/registrations/', { params })
+    const response = await api.get('/api/competitions/registrations/', { params })
     return response.data
   },
   
-  // Для регистрации user будет добавлен на бэкенде из токена
   registerForCompetition: async (data: { competition: number; category: number }): Promise<CompetitionRegistration> => {
-    const response = await api.post('/competitions/registrations/', data)
+    const response = await api.post('/api/competitions/registrations/', data)
     return response.data
   },
 }

@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 
-                 'phone', 'telegram_id', 'is_coach', 'is_student', 
+                 'phone', 'telegram_id', 'is_coach', 'is_student', 'is_staff',
                  'date_of_birth', 'avatar', 'is_active', 'password']
         read_only_fields = ['id', 'is_active']
         extra_kwargs = {
@@ -27,10 +27,19 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password', None)
         if not password:
             raise serializers.ValidationError({'password': 'Пароль обязателен для регистрации'})
+        # Если пользователь администратор, автоматически делаем его тренером
+        if validated_data.get('is_staff'):
+            validated_data['is_coach'] = True
         user = User.objects.create(**validated_data)
         user.set_password(password)
         user.save()
         return user
+    
+    def update(self, instance, validated_data):
+        # Если пользователь администратор, автоматически делаем его тренером
+        if validated_data.get('is_staff') or instance.is_staff:
+            validated_data['is_coach'] = True
+        return super().update(instance, validated_data)
 
 
 class ProfileSerializer(serializers.ModelSerializer):

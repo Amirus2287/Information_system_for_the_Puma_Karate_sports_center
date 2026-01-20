@@ -1,18 +1,58 @@
 import api from './axiosConfig'
 
 export const usersApi = {
-  getUsers: async () => {
-    const response = await api.get('/auth/users/')
+  getUsers: async (params?: any) => {
+    const response = await api.get('/api/auth/users/', { params })
     return response.data
   },
   
   getUser: async (id: number) => {
-    const response = await api.get(`/auth/users/${id}/`)
+    const response = await api.get(`/api/auth/users/${id}/`)
     return response.data
   },
   
-  getAchievements: async () => {
-    const response = await api.get('/auth/achievements/')
+  createUser: async (data: any) => {
+    const response = await api.post('/api/auth/users/', data)
+    return response.data
+  },
+  
+  updateUser: async (id: number, data: any) => {
+    const response = await api.patch(`/api/auth/users/${id}/`, data)
+    return response.data
+  },
+  
+  deleteUser: async (id: number) => {
+    const response = await api.delete(`/api/auth/users/${id}/`)
+    return response.data
+  },
+  
+  getAchievements: async (params?: any) => {
+    const response = await api.get('/api/auth/achievements/', { params })
+    return response.data
+  },
+  
+  createAchievement: async (data: any) => {
+    const response = await api.post('/api/auth/achievements/', data)
+    return response.data
+  },
+  
+  getNews: async (params?: any) => {
+    const response = await api.get('/api/auth/news/', { params })
+    return response.data
+  },
+  
+  createNews: async (data: any) => {
+    const response = await api.post('/api/auth/news/', data)
+    return response.data
+  },
+  
+  updateNews: async (id: number, data: any) => {
+    const response = await api.patch(`/api/auth/news/${id}/`, data)
+    return response.data
+  },
+  
+  deleteNews: async (id: number) => {
+    const response = await api.delete(`/api/auth/news/${id}/`)
     return response.data
   },
 }

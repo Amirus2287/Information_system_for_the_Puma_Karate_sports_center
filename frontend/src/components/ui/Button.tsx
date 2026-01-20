@@ -14,17 +14,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         className={cn(
-          'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
+          'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none shadow-sm hover:shadow-md',
           {
-            'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500': variant === 'primary',
-            'bg-white text-primary-500 border border-primary-500 hover:bg-primary-50 focus:ring-primary-500': variant === 'secondary',
-            'border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 focus:ring-gray-500': variant === 'outline',
+            'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 focus:ring-primary-500': variant === 'primary',
+            'bg-white text-primary-600 border-2 border-primary-500 hover:bg-primary-50 hover:border-primary-600 focus:ring-primary-500': variant === 'secondary',
+            'border-2 border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:ring-gray-500': variant === 'outline',
             'text-gray-700 hover:bg-gray-100 focus:ring-gray-500': variant === 'ghost',
-            'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500': variant === 'danger',
-            'text-primary-500 hover:text-primary-600 underline bg-transparent border-none p-0': variant === 'link',
-            'px-3 py-1.5 text-sm': size === 'sm',
-            'px-4 py-2.5': size === 'md',
-            'px-6 py-3 text-lg': size === 'lg',
+            'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 focus:ring-red-500': variant === 'danger',
+            'text-primary-600 hover:text-primary-700 underline bg-transparent border-none p-0 shadow-none hover:shadow-none': variant === 'link',
+            'px-4 py-2 text-sm': size === 'sm',
+            'px-6 py-3': size === 'md',
+            'px-8 py-4 text-lg': size === 'lg',
           },
           className
         )}

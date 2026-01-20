@@ -70,7 +70,6 @@ export default function JournalForm({ open, onClose }: JournalFormProps) {
           label="Ученик"
           {...register('student')}
           error={errors.student?.message}
-          onOpenChange={loadStudents}
         >
           {students.map((student) => (
             <option key={student.id} value={student.id}>

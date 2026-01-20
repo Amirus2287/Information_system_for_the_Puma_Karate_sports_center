@@ -1,9 +1,13 @@
 # accounts/views.py
-from rest_framework import viewsets, generics, permissions, status
+from rest_framework import viewsets, generics, permissions, status, filters
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+from django.utils.decorators import method_decorator
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import User, Profile, Achievement, News, ClubTeam
+from .permissions import IsAdmin, IsCoachOrAdmin
 from .serializers import (
     UserSerializer, ProfileSerializer, AchievementSerializer, 
     NewsSerializer, ClubTeamSerializer
@@ -16,6 +20,31 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['username', 'first_name', 'last_name', 'email']
+    ordering_fields = ['date_joined', 'last_name', 'first_name']
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            # Администраторы видят всех пользователей
+            return User.objects.all()
+        elif user.is_coach:
+            # Тренеры видят учеников своих групп
+            from trainings.models import GroupStudent
+            student_ids = GroupStudent.objects.filter(
+                group__coach=user,
+                is_active=True
+            ).values_list('student_id', flat=True)
+            return User.objects.filter(id__in=student_ids)
+        # Ученики видят только себя
+        return User.objects.filter(id=user.id)
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            # Только администраторы могут создавать/редактировать пользователей
+            return [IsAdmin()]
+        return [permissions.IsAuthenticated()]
     
     @action(detail=False, methods=['get'])
     def me(self, request):
@@ -32,13 +61,38 @@ class ProfileViewSet(viewsets.ModelViewSet):
 class AchievementViewSet(viewsets.ModelViewSet):
     queryset = Achievement.objects.all()
     serializer_class = AchievementSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['user']
+    ordering_fields = ['date']
+    ordering = ['-date']
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_student and not user.is_coach:
+            # Ученики видят только свои достижения
+            return Achievement.objects.filter(user=user)
+        # Тренеры и администраторы видят все достижения
+        return Achievement.objects.all()
 
 
 class NewsViewSet(viewsets.ModelViewSet):
     queryset = News.objects.all()
     serializer_class = NewsSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    ordering_fields = ['created_at']
+    ordering = ['-created_at']
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            # Только администраторы могут создавать/редактировать новости
+            return [IsAdmin()]
+        return [permissions.IsAuthenticated()]
+    
+    def perform_create(self, serializer):
+        # Автоматически устанавливаем автора при создании новости
+        serializer.save(author=self.request.user)
 
 
 class ClubTeamViewSet(viewsets.ModelViewSet):
@@ -48,6 +102,8 @@ class ClubTeamViewSet(viewsets.ModelViewSet):
 
 
 # Дополнительные View
+@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = UserSerializer
@@ -57,34 +113,61 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
-        # Создаем JWT токен для нового пользователя
-        from rest_framework_simplejwt.tokens import RefreshToken
-        refresh = RefreshToken.for_user(user)
+        # Автоматически логиним пользователя после регистрации
+        login(request, user)
         
         return Response({
             'user': UserSerializer(user, context=self.get_serializer_context()).data,
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
             'message': 'Пользователь успешно создан'
         }, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
-def login(request):
+@csrf_exempt
+@ensure_csrf_cookie
+def login_view(request):
     username = request.data.get('username')
     password = request.data.get('password')
     
-    user = authenticate(username=username, password=password)
+    if not username or not password:
+        return Response(
+            {'error': 'Необходимо указать username и password'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     
-    if user:
-        token, created = Token.objects.get_or_create(user=user)
+    user = authenticate(request, username=username, password=password)
+    
+    if user is not None:
+        login(request, user)
+        serializer = UserSerializer(user)
         return Response({
-            'token': token.key,
-            'user': UserSerializer(user).data
+            'user': serializer.data,
+            'message': 'Вход выполнен успешно'
         })
-    
-    return Response({'error': 'Неверные учетные данные'}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(
+            {'error': 'Неверные учетные данные'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+@csrf_exempt
+def logout_view(request):
+    logout(request)
+    return Response({'message': 'Выход выполнен успешно'})
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+@ensure_csrf_cookie
+def csrf_token(request):
+    """Получение CSRF токена для фронтенда"""
+    from django.middleware.csrf import get_token
+    token = get_token(request)
+    return Response({'csrfToken': token})
 
 
 @api_view(['GET'])

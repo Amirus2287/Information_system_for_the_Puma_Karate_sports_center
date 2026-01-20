@@ -7,9 +7,12 @@ import Dashboard from './pages/Dashboard'
 import Competitions from './pages/Competitions'
 import Trainings from './pages/Trainings'
 import Journal from './pages/Journal'
-import Profile from './pages/Profile'
+import Settings from './pages/Settings'
 import ProtectedRoute from './components/auth/ProtectedRoute'
-import Home from './pages/Home' // Убедитесь, что создали этот файл
+import Home from './pages/Home'
+import NewsManagement from './pages/admin/NewsManagement'
+import UsersManagement from './pages/admin/UsersManagement'
+import Groups from './pages/Groups'
 
 const queryClient = new QueryClient()
 
@@ -28,7 +31,10 @@ export default function App() {
               <Route path="/competitions" element={<Competitions />} />
               <Route path="/trainings" element={<Trainings />} />
               <Route path="/journal" element={<Journal />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/groups" element={<Groups />} />
+              <Route path="/admin/news" element={<NewsManagement />} />
+              <Route path="/admin/users" element={<UsersManagement />} />
             </Route>
           </Route>
           

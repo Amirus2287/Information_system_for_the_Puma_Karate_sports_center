@@ -4,24 +4,25 @@ import toast from 'react-hot-toast'
 export const authApi = {
   login: async (username: string, password: string) => {
     try {
-      const response = await api.post('/api/auth/token/', { username, password })
-      const { access, refresh } = response.data
-      
-      if (access) {
-        localStorage.setItem('token', access)
-        if (refresh) {
-          localStorage.setItem('refresh_token', refresh)
-        }
-      }
-      
+      const response = await api.post('/api/auth/login/', { username, password })
       return response.data
     } catch (error: any) {
-      const message = error.response?.data?.detail || 
+      const message = error.response?.data?.error || 
+                     error.response?.data?.detail || 
                      error.response?.data?.message || 
                      error.message || 
                      'Ошибка входа. Проверьте данные.'
       toast.error(message)
       throw error
+    }
+  },
+  
+  logout: async () => {
+    try {
+      await api.post('/api/auth/logout/')
+      toast.success('Выход выполнен успешно')
+    } catch (error: any) {
+      console.error('Logout error:', error)
     }
   },
   
@@ -31,14 +32,6 @@ export const authApi = {
       const response = await api.post('/api/auth/register/', data)
       console.log('Register response:', response.data)
       
-      // Бэкенд возвращает JWT токены (access и refresh)
-      const { access, refresh } = response.data
-      if (access) {
-        localStorage.setItem('token', access)
-        if (refresh) {
-          localStorage.setItem('refresh_token', refresh)
-        }
-      }
       toast.success('Регистрация успешна!')
       return response.data
     } catch (error: any) {
@@ -50,13 +43,13 @@ export const authApi = {
       if (error.response?.data) {
         const data = error.response.data
         
-        // Обработка различных форматов ошибок от Django
         if (data.detail) {
           message = Array.isArray(data.detail) ? data.detail[0] : String(data.detail)
         } else if (data.message) {
           message = Array.isArray(data.message) ? data.message[0] : String(data.message)
+        } else if (data.error) {
+          message = Array.isArray(data.error) ? data.error[0] : String(data.error)
         } else if (typeof data === 'object' && data !== null) {
-          // Собираем все ошибки валидации
           const errors: string[] = []
           const fieldNames: Record<string, string> = {
             username: 'Имя пользователя',
@@ -86,7 +79,6 @@ export const authApi = {
           if (errors.length > 0) {
             message = errors.join('. ')
           } else {
-            // Если это объект с ошибками валидации
             const firstError = Object.values(data)[0]
             if (firstError) {
               message = Array.isArray(firstError) ? firstError[0] : String(firstError)
@@ -107,11 +99,6 @@ export const authApi = {
       const response = await api.get('/api/auth/me/')
       return response.data
     } catch (error: any) {
-      // Если токен невалидный, очищаем его
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token')
-        localStorage.removeItem('refresh_token')
-      }
       throw error
     }
   },

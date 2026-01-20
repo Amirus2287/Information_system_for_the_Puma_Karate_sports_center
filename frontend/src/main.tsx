@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './styles/globals.css'
 
-// Скрываем экран загрузки после монтирования приложения
 const hideLoading = () => {
   const loadingContainer = document.querySelector('.loading-container')
   if (loadingContainer) {
@@ -23,5 +22,4 @@ ReactDOM.createRoot(rootElement).render(
   </React.StrictMode>,
 )
 
-// Скрываем загрузку после монтирования
 hideLoading()

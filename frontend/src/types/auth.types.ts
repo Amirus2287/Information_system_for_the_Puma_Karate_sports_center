@@ -7,6 +7,7 @@ export interface User {
   phone?: string
   is_coach: boolean
   is_student: boolean
+  is_staff?: boolean  // Администратор
   telegram_id?: string
   date_of_birth?: string
   avatar?: string

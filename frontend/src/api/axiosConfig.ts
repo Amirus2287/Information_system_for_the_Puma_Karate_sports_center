@@ -1,38 +1,86 @@
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
-// Используем прокси из vite.config.ts для разработки
-// В продакшене можно использовать VITE_API_URL
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '' : 'http://localhost:8000')
+let API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '' : 'http://localhost:8000')
+if (API_URL && typeof API_URL === 'string' && API_URL.endsWith('/api')) {
+  API_URL = API_URL.slice(0, -4)
+}
+
+function getCsrfToken(): string | null {
+  const name = 'csrftoken'
+  const cookies = document.cookie.split(';')
+  for (let cookie of cookies) {
+    const [key, value] = cookie.trim().split('=')
+    if (key === name) {
+      return decodeURIComponent(value)
+    }
+  }
+  return null
+}
+
+let csrfTokenPromise: Promise<string | null> | null = null
+
+async function ensureCsrfToken(): Promise<string | null> {
+  let token = getCsrfToken()
+  if (token) {
+    return token
+  }
+  
+  if (!csrfTokenPromise) {
+    const csrfUrl = import.meta.env.DEV 
+      ? '/api/auth/csrf-token/'
+      : `${API_URL || 'http://localhost:8000'}/api/auth/csrf-token/`
+    
+    csrfTokenPromise = axios.get(csrfUrl, {
+      withCredentials: true
+    }).then(response => {
+      const token = response.data.csrfToken || getCsrfToken()
+      return token
+    }).catch(() => {
+      return getCsrfToken()
+    })
+  }
+  
+  return csrfTokenPromise
+}
 
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+api.interceptors.request.use(
+  async (config) => {
+    if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '')) {
+      if (!config.url?.includes('/csrf-token/')) {
+        const csrfToken = await ensureCsrfToken()
+        if (csrfToken) {
+          config.headers['X-CSRFToken'] = csrfToken
+        }
+      }
+    }
+    
+    if (config.url?.includes('/register/') || config.url?.includes('/login/')) {
+      console.log('API Request:', {
+        url: config.url,
+        method: config.method,
+        baseURL: config.baseURL,
+        data: config.data ? { ...config.data, password: '***' } : null
+      })
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
   }
-  // Логирование для отладки
-  if (config.url?.includes('/register/') || config.url?.includes('/token/')) {
-    console.log('API Request:', {
-      url: config.url,
-      method: config.method,
-      baseURL: config.baseURL,
-      data: config.data ? { ...config.data, password: '***' } : null
-    })
-  }
-  return config
-})
+)
 
 api.interceptors.response.use(
   (response) => {
-    // Логирование успешных ответов для отладки
-    if (response.config.url?.includes('/register/') || response.config.url?.includes('/token/')) {
+    if (response.config.url?.includes('/register/') || response.config.url?.includes('/login/')) {
       console.log('API Response:', {
         url: response.config.url,
         status: response.status,
@@ -42,8 +90,7 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
-    // Логирование ошибок
-    if (error.config?.url?.includes('/register/') || error.config?.url?.includes('/token/')) {
+    if (error.config?.url?.includes('/register/') || error.config?.url?.includes('/login/')) {
       console.error('API Error:', {
         url: error.config?.url,
         status: error.response?.status,
@@ -53,9 +100,7 @@ api.interceptors.response.use(
       })
     }
     
-    // Обработка сетевых ошибок
     if (!error.response) {
-      // Нет ответа от сервера (сетевая ошибка)
       const isNetworkError = error.code === 'ERR_NETWORK' || 
                             error.message?.includes('Network Error') ||
                             error.message?.includes('Failed to fetch')
@@ -68,14 +113,14 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
     
-    // Обработка ошибок 401 (неавторизован)
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('refresh_token')
-      // Не показываем toast для ошибок авторизации, так как они обрабатываются в компонентах
       if (!error.config?.url?.includes('/auth/')) {
         toast.error('Сессия истекла. Пожалуйста, войдите снова.')
       }
+    }
+    
+    if (error.response?.status === 403 && error.response?.data?.detail?.includes('CSRF')) {
+      toast.error('Ошибка CSRF токена. Попробуйте обновить страницу.')
     }
     
     return Promise.reject(error)

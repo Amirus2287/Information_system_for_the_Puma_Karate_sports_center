@@ -8,5 +8,4 @@ export { default as Select } from './Select'
 export { default as Table } from './Table'
 export { default as Textarea } from './Textarea'
 
-// Для Tabs используем именованный экспорт
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs'

@@ -1,142 +1,416 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { trainingsApi } from '../api/trainings'
+import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
-import Card from '../components/ui/Card'
 import TrainingForm from '../components/trainings/TrainingForm'
 import AttendanceModal from '../components/trainings/AttendanceModal'
-import { Plus, Calendar, Clock, Users, MapPin } from 'lucide-react'
+import { Plus, Calendar, Clock, Users, MapPin, BookOpen, CheckCircle, XCircle, User, Filter, X } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function Trainings() {
+  const { user } = useAuth()
+  const isAdmin = user?.is_staff
+  const isCoach = user?.is_coach || isAdmin
+  const isStudent = user?.is_student && !isCoach
+  
   const [showTrainingForm, setShowTrainingForm] = useState(false)
   const [showAttendanceModal, setShowAttendanceModal] = useState(false)
   const [selectedTraining, setSelectedTraining] = useState<any>(null)
+  const [selectedGroup, setSelectedGroup] = useState<string>('')
+  const [selectedDate, setSelectedDate] = useState<string>('')
   
-  const { data: trainings, isLoading } = useQuery({
-    queryKey: ['trainings'],
-    queryFn: () => trainingsApi.getTrainings(),
+  const { data: groups } = useQuery({
+    queryKey: ['groups'],
+    queryFn: () => trainingsApi.getGroups(),
+    enabled: !!user,
   })
   
-  const { data: homework } = useQuery({
-    queryKey: ['homework'],
-    queryFn: () => trainingsApi.getHomework(),
+  const { data: trainings, isLoading } = useQuery({
+    queryKey: ['trainings', selectedGroup, selectedDate],
+    queryFn: () => {
+      const params: any = {}
+      if (selectedGroup) {
+        params.group = selectedGroup
+      }
+      if (selectedDate) {
+        params.date = selectedDate
+      }
+      return trainingsApi.getTrainings(params)
+    },
+  })
+  
+  const { data: homeworks } = useQuery({
+    queryKey: ['homeworks'],
+    queryFn: () => trainingsApi.getHomeworks(),
+    enabled: !!user,
   })
   
   if (isLoading) {
-    return <div>Загрузка...</div>
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Загрузка...</p>
+        </div>
+      </div>
+    )
   }
   
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Тренировки</h1>
-          <p className="text-gray-600">Расписание и посещаемость</p>
+          <h1 className="text-3xl font-bold text-gray-900">Тренировки</h1>
+          <p className="text-gray-600 mt-1">
+            {isCoach ? 'Управление тренировками и группами' : 'Расписание тренировок и домашние задания'}
+          </p>
         </div>
         
-        <Button onClick={() => setShowTrainingForm(true)} leftIcon={<Plus />}>
-          Новая тренировка
-        </Button>
+        {isCoach && (
+          <Button 
+            onClick={() => setShowTrainingForm(true)} 
+            leftIcon={<Plus className="w-5 h-5" />}
+          >
+            Новая тренировка
+          </Button>
+        )}
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          <Card className="p-4">
-            <h2 className="text-xl font-semibold mb-4">Расписание</h2>
+          <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-6 h-6 text-primary-600" />
+                <h2 className="text-xl font-bold text-gray-900">Расписание тренировок</h2>
+              </div>
+            </div>
+            
+            <div className="mb-6 p-4 bg-red-50 border-2 border-primary-100 rounded-xl">
+              <div className="flex items-center gap-2 mb-3">
+                <Filter className="w-5 h-5 text-primary-600" />
+                <h3 className="font-semibold text-gray-900">Фильтры</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Группа
+                  </label>
+                  <select
+                    value={selectedGroup}
+                    onChange={(e) => setSelectedGroup(e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                  >
+                    <option value="">Все группы</option>
+                    {groups?.map((group: any) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Дата
+                  </label>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+              {(selectedGroup || selectedDate) && (
+                <div className="mt-3 flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedGroup('')
+                      setSelectedDate('')
+                    }}
+                    leftIcon={<X className="w-4 h-4" />}
+                  >
+                    Сбросить фильтры
+                  </Button>
+                </div>
+              )}
+            </div>
             
             {trainings?.length ? (
               <div className="space-y-4">
                 {trainings.map((training: any) => (
-                  <Card key={training.id} className="p-4 hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-semibold">{training.group?.name}</h3>
-                        <p className="text-sm text-gray-600">{training.topic}</p>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedTraining(training)
-                            setShowAttendanceModal(true)
-                          }}
-                        >
-                          Отметить посещаемость
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(training.date).toLocaleDateString()}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        <span>{training.time}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4" />
-                        <span>{training.group?.coach_name}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4" />
-                        <span>{training.group?.gym?.name}</span>
-                      </div>
-                    </div>
-                  </Card>
+                  <TrainingCard
+                    key={training.id}
+                    training={training}
+                    isCoach={!!isCoach}
+                  />
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-8">
-                Нет запланированных тренировок
-              </p>
+              <div className="text-center py-12">
+                <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg font-medium">
+                  Нет запланированных тренировок
+                </p>
+                {isCoach && (
+                  <p className="text-gray-400 text-sm mt-2">
+                    Создайте первую тренировку, нажав кнопку выше
+                  </p>
+                )}
+              </div>
             )}
-          </Card>
+          </div>
         </div>
         
         <div className="space-y-6">
-          <Card className="p-4">
-            <h3 className="font-semibold mb-4">Домашние задания</h3>
+          <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
+            <div className="flex items-center gap-2 mb-4">
+              <BookOpen className="w-5 h-5 text-primary-600" />
+              <h3 className="font-bold text-gray-900">Домашние задания</h3>
+            </div>
             
-            {homework?.length ? (
+            {homeworks?.length ? (
               <div className="space-y-3">
-                {homework.slice(0, 3).map((hw: any) => (
-                  <div key={hw.id} className="p-3 border rounded">
-                    <p className="font-medium">{hw.task.slice(0, 50)}...</p>
-                    <p className="text-sm text-gray-600">
-                      Срок: {new Date(hw.deadline).toLocaleDateString()}
-                    </p>
-                    <div className={`text-xs mt-1 ${hw.completed ? 'text-green-600' : 'text-red-600'}`}>
-                      {hw.completed ? 'Выполнено' : 'Не выполнено'}
+                {homeworks.slice(0, 5).map((hw: any) => (
+                  <div
+                    key={hw.id}
+                    className="p-4 border-2 border-gray-100 rounded-xl hover:border-primary-200 hover:bg-red-50 transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="font-medium text-gray-900 text-sm flex-1">
+                        {hw.task.length > 60 ? `${hw.task.slice(0, 60)}...` : hw.task}
+                      </p>
+                      {hw.completed ? (
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 ml-2" />
+                      ) : (
+                        <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 ml-2" />
+                      )}
                     </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-xs text-gray-600">
+                        Срок: {new Date(hw.deadline).toLocaleDateString('ru-RU')}
+                      </p>
+                      <span
+                        className={`text-xs font-medium px-2 py-1 rounded-full ${
+                          hw.completed
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {hw.completed ? 'Выполнено' : 'Не выполнено'}
+                      </span>
+                    </div>
+                    {hw.training_date && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Тренировка: {new Date(hw.training_date).toLocaleDateString('ru-RU')}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-4">
-                Нет домашних заданий
-              </p>
+              <div className="text-center py-8">
+                <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 text-sm">
+                  Нет домашних заданий
+                </p>
+              </div>
             )}
-          </Card>
+          </div>
         </div>
       </div>
       
-      <TrainingForm
-        open={showTrainingForm}
-        onClose={() => setShowTrainingForm(false)}
-      />
+      {isCoach && (
+        <>
+          <TrainingForm
+            open={showTrainingForm}
+            onClose={() => setShowTrainingForm(false)}
+          />
+          
+          <AttendanceModal
+            open={showAttendanceModal}
+            onClose={() => setShowAttendanceModal(false)}
+            training={selectedTraining}
+          />
+        </>
+      )}
+    </div>
+  )
+}
+
+function TrainingCard({ training, isCoach }: { training: any; isCoach: boolean }) {
+  const queryClient = useQueryClient()
+  
+  const { data: groupStudents } = useQuery({
+    queryKey: ['group-students', training.group],
+    queryFn: () => trainingsApi.getGroupStudents({ group: training.group, is_active: true }),
+    enabled: !!training.group && isCoach,
+  })
+  
+  const { data: attendances } = useQuery({
+    queryKey: ['attendances', training.id],
+    queryFn: () => trainingsApi.getAttendances({ training: training.id }),
+    enabled: !!training.id && isCoach,
+  })
+  
+  const toggleAttendanceMutation = useMutation({
+    mutationFn: ({ studentId, present }: { studentId: number; present: boolean }) => {
+      const existing = attendances?.find((att: any) => att.student === studentId)
       
-      <AttendanceModal
-        open={showAttendanceModal}
-        onClose={() => setShowAttendanceModal(false)}
-        training={selectedTraining}
-      />
+      if (existing) {
+        return trainingsApi.updateAttendance(existing.id, {
+          present,
+          notes: existing.notes || '',
+        })
+      } else {
+        return trainingsApi.createAttendance({
+          training: training.id,
+          student: studentId,
+          present,
+          notes: '',
+        })
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['attendances', training.id] })
+      toast.success('Посещаемость обновлена')
+    },
+    onError: () => {
+      toast.error('Ошибка при обновлении посещаемости')
+    },
+  })
+  
+  const getAttendanceForStudent = (studentId: number) => {
+    return attendances?.find((att: any) => att.student === studentId)
+  }
+  
+  const students = groupStudents || []
+  
+  return (
+    <div className="bg-gradient-to-r from-white to-red-50 border-2 border-gray-100 rounded-xl p-5 hover:border-primary-200 hover:shadow-md transition-all">
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex-1">
+          <h3 className="font-bold text-lg text-gray-900 mb-1">
+            {training.group_name || training.group?.name}
+          </h3>
+          {training.topic && (
+            <p className="text-sm text-gray-600 mb-3">{training.topic}</p>
+          )}
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="flex items-center gap-2 text-gray-700">
+              <Calendar className="w-4 h-4 text-primary-600" />
+              <span className="font-medium">
+                {new Date(training.date).toLocaleDateString('ru-RU', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                })}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2 text-gray-700">
+              <Clock className="w-4 h-4 text-primary-600" />
+              <span className="font-medium">{training.time}</span>
+            </div>
+            
+            {training.coach_name && (
+              <div className="flex items-center gap-2 text-gray-700">
+                <Users className="w-4 h-4 text-primary-600" />
+                <span className="font-medium">{training.coach_name}</span>
+              </div>
+            )}
+            
+            {training.gym_name && (
+              <div className="flex items-center gap-2 text-gray-700">
+                <MapPin className="w-4 h-4 text-primary-600" />
+                <div>
+                  <span className="font-medium block">{training.gym_name}</span>
+                  {training.gym_address && (
+                    <span className="text-xs text-gray-500">{training.gym_address}</span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {isCoach && (
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <User className="w-4 h-4 text-primary-600" />
+            <span className="font-medium text-sm text-gray-700">
+              Ученики группы ({students.length})
+            </span>
+          </div>
+          
+          <div className="space-y-2">
+              {students.length > 0 ? (
+                students.map((groupStudent: any) => {
+                  const studentId = groupStudent.student
+                  const attendance = getAttendanceForStudent(studentId)
+                  const isPresent = attendance?.present ?? null
+                  
+                  return (
+                    <div
+                      key={groupStudent.id}
+                      className="flex items-center justify-between p-3 bg-white border-2 border-gray-100 rounded-lg hover:border-primary-200 transition-all"
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="flex-shrink-0">
+                          {isPresent === true ? (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          ) : isPresent === false ? (
+                            <XCircle className="w-5 h-5 text-red-600" />
+                          ) : (
+                            <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm text-gray-900">
+                            {groupStudent.student_name || `${groupStudent.student_first_name || ''} ${groupStudent.student_last_name || ''}`.trim()}
+                          </p>
+                          {attendance?.notes && (
+                            <p className="text-xs text-gray-500 mt-1">{attendance.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant={isPresent === true ? "primary" : "outline"}
+                          onClick={() => toggleAttendanceMutation.mutate({ studentId, present: true })}
+                          disabled={toggleAttendanceMutation.isPending}
+                          className="h-8 px-3"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={isPresent === false ? "danger" : "outline"}
+                          onClick={() => toggleAttendanceMutation.mutate({ studentId, present: false })}
+                          disabled={toggleAttendanceMutation.isPending}
+                          className="h-8 px-3"
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                })
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  Нет учеников в группе
+                </p>
+              )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

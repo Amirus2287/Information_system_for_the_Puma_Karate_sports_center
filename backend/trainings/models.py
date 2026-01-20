@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 User = settings.AUTH_USER_MODEL
 
@@ -28,41 +29,48 @@ class Group(models.Model):
         return self.name
 
 class Training(models.Model):
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='trainings')
     date = models.DateField()
     time = models.TimeField()
     topic = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
     
     class Meta:
         verbose_name = 'Тренировка'
         verbose_name_plural = 'Тренировки'
+        ordering = ['-date', '-time']
     
     def __str__(self):
         return f"{self.group} - {self.date}"
 
 class Homework(models.Model):
-    training = models.ForeignKey(Training, on_delete=models.CASCADE)
-    student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'is_student': True})
+    training = models.ForeignKey(Training, on_delete=models.CASCADE, related_name='homeworks')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'is_student': True}, related_name='homeworks')
     task = models.TextField()
     deadline = models.DateField()
     completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
     
     class Meta:
         verbose_name = 'Домашнее задание'
         verbose_name_plural = 'Домашние задания'
+        ordering = ['-created_at']
     
     def __str__(self):
         return f"{self.student} - {self.task[:50]}"
 
 class Attendance(models.Model):
-    training = models.ForeignKey(Training, on_delete=models.CASCADE)
-    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    training = models.ForeignKey(Training, on_delete=models.CASCADE, related_name='attendances')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='attendances')
     present = models.BooleanField(default=True)
     notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
     
     class Meta:
         verbose_name = 'Посещаемость'
         verbose_name_plural = 'Посещаемость'
+        unique_together = ['training', 'student']
+        ordering = ['-training__date']
     
     def __str__(self):
         return f"{self.student} - {self.training.date}"

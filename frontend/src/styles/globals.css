@@ -4,60 +4,81 @@
 
 @layer base {
   :root {
-    --color-primary: 229, 62, 62;
-    --color-secondary: 45, 55, 72;
+    --color-primary: 220, 38, 38;
+    --color-secondary: 17, 24, 39;
+  }
+  
+  * {
+    @apply border-gray-200;
   }
   
   body {
-    @apply bg-white text-gray-900;
+    @apply bg-white text-gray-900 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold text-gray-900;
+    @apply font-bold text-gray-900 tracking-tight;
+  }
+  
+  h1 {
+    @apply text-4xl;
+  }
+  
+  h2 {
+    @apply text-3xl;
+  }
+  
+  h3 {
+    @apply text-2xl;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-500 text-white px-6 py-3 rounded-lg font-medium 
-           hover:bg-primary-600 transition-colors focus:outline-none 
-           focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-xl font-semibold 
+           hover:from-primary-600 hover:to-primary-700 transition-all duration-200 focus:outline-none 
+           focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 shadow-md hover:shadow-lg;
   }
   
   .btn-secondary {
-    @apply bg-white text-primary-500 border border-primary-500 px-6 py-3 
-           rounded-lg font-medium hover:bg-primary-50 transition-colors 
-           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply bg-white text-primary-600 border-2 border-primary-500 px-6 py-3 
+           rounded-xl font-semibold hover:bg-primary-50 hover:border-primary-600 transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 shadow-sm hover:shadow-md;
   }
   
   .card {
-    @apply bg-white border border-gray-200 rounded-xl shadow-sm 
-           hover:shadow-md transition-shadow;
+    @apply bg-white border-2 border-gray-100 rounded-2xl shadow-elegant 
+           hover:shadow-elegant-lg transition-all duration-300;
   }
   
   .input-field {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg 
+    @apply w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium
            focus:outline-none focus:ring-2 focus:ring-primary-500 
-           focus:border-transparent transition-colors;
+           focus:border-primary-500 transition-all duration-200 hover:border-gray-300;
   }
   
   .badge {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold;
   }
   
   .badge-success {
-    @apply bg-green-100 text-green-800;
+    @apply bg-green-100 text-green-700;
   }
   
   .badge-warning {
-    @apply bg-yellow-100 text-yellow-800;
+    @apply bg-yellow-100 text-yellow-700;
   }
   
   .badge-error {
-    @apply bg-red-100 text-red-800;
+    @apply bg-red-100 text-primary-700;
   }
   
   .badge-info {
-    @apply bg-blue-100 text-blue-800;
+    @apply bg-blue-100 text-blue-700;
+  }
+  
+  .section-divider {
+    @apply h-1 w-20 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full;
   }
 }

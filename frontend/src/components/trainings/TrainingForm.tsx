@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { trainingsApi } from '../../api/trainings'
@@ -10,17 +10,32 @@ import Button from '../ui/Button'
 interface TrainingFormProps {
   open: boolean
   onClose: () => void
+  initialDate?: string
+  initialTime?: string
 }
 
-export default function TrainingForm({ open, onClose }: TrainingFormProps) {
+export default function TrainingForm({ open, onClose, initialDate, initialTime }: TrainingFormProps) {
   const queryClient = useQueryClient()
   
-  const { register, handleSubmit, reset } = useForm({
+  const { register, handleSubmit, reset } = useForm<any>({
     defaultValues: {
-      date: new Date().toISOString().split('T')[0],
-      time: '18:00',
+      group: '',
+      date: initialDate || new Date().toISOString().split('T')[0],
+      time: initialTime || '18:00',
+      topic: '',
     },
   })
+  
+  React.useEffect(() => {
+    if (initialDate || initialTime) {
+      reset({
+        group: '',
+        date: initialDate || new Date().toISOString().split('T')[0],
+        time: initialTime || '18:00',
+        topic: '',
+      })
+    }
+  }, [initialDate, initialTime, reset])
   
   const { data: groups } = useQuery({
     queryKey: ['groups'],
@@ -28,7 +43,7 @@ export default function TrainingForm({ open, onClose }: TrainingFormProps) {
   })
   
   const mutation = useMutation({
-    mutationFn: (data: any) => trainingsApi.getTrainings(), // Замените на реальный метод
+    mutationFn: (data: any) => trainingsApi.createTraining(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trainings'] })
       onClose()
