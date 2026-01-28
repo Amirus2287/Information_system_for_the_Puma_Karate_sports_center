@@ -28,17 +28,23 @@ export const authApi = {
   
   register: async (data: any) => {
     try {
-      console.log('Registering with data:', { ...data, password: '***' })
+      if (import.meta.env.DEV) {
+        console.log('Registering with data:', { ...data, password: '***' })
+      }
       const response = await api.post('/api/auth/register/', data)
-      console.log('Register response:', response.data)
+      if (import.meta.env.DEV) {
+        console.log('Register response:', response.data)
+      }
       
       toast.success('Регистрация успешна!')
       return response.data
     } catch (error: any) {
       let message = 'Ошибка регистрации. Проверьте данные.'
       
-      console.error('Register error:', error)
-      console.error('Error response:', error.response?.data)
+      if (import.meta.env.DEV) {
+        console.error('Register error:', error)
+        console.error('Error response:', error.response?.data)
+      }
       
       if (error.response?.data) {
         const data = error.response.data

@@ -61,12 +61,25 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'temp.db',
+if os.getenv("USE_SQLITE") == "True":
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv("DB_NAME"),
+            'USER': os.getenv("DB_USER"),
+            'PASSWORD': os.getenv("DB_PASSWORD"),
+            'HOST': os.getenv("DB_HOST"),
+            'PORT': os.getenv("DB_PORT"),
+        }
+    }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -98,7 +111,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.User'
 
-CORS_ALLOW_ALL_ORIGINS = True  # Для разработки
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -128,17 +141,15 @@ REST_FRAMEWORK = {
     ),
 }
 
-# Настройки сессий
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = False  # True для HTTPS в продакшене
-SESSION_COOKIE_AGE = 86400  # 24 часа
+SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_AGE = 86400
 SESSION_SAVE_EVERY_REQUEST = True
 
-# Настройки CSRF
-CSRF_COOKIE_HTTPONLY = False  # Должно быть False для доступа через JavaScript
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE = False  # True для HTTPS в продакшене
+CSRF_COOKIE_SECURE = False
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
     'http://localhost:5173',

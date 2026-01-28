@@ -9,14 +9,11 @@ class IsStudent(permissions.BasePermission):
         return bool(request.user and request.user.is_authenticated and request.user.is_student)
 
 class IsAdmin(permissions.BasePermission):
-    """Проверка, что пользователь является администратором (is_staff)"""
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated and request.user.is_staff)
 
 class IsCoachOrAdmin(permissions.BasePermission):
-    """Проверка, что пользователь является тренером или администратором"""
     def has_permission(self, request, view):
-        # Администратор автоматически является тренером
         return bool(
             request.user and 
             request.user.is_authenticated and 

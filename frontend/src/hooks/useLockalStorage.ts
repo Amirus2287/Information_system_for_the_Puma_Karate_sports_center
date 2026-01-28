@@ -16,7 +16,9 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       setStoredValue(valueToStore)
       window.localStorage.setItem(key, JSON.stringify(valueToStore))
     } catch {
-      console.error('Local storage error')
+      if (import.meta.env.DEV) {
+        console.error('Local storage error')
+      }
     }
   }
   

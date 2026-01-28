@@ -24,15 +24,11 @@ class GroupViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        # Администратор автоматически является тренером
         is_coach = user.is_coach or user.is_staff
         if user.is_student and not is_coach:
-            # Ученики видят только группы, в которых они состоят
             return Group.objects.filter(students__student=user, students__is_active=True).distinct()
         elif is_coach and not user.is_staff:
-            # Тренеры (не админы) видят только свои группы
             return Group.objects.filter(coach=user)
-        # Администраторы видят все группы
         return Group.objects.all()
 
 class TrainingViewSet(viewsets.ModelViewSet):
@@ -46,12 +42,10 @@ class TrainingViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        # Администратор автоматически является тренером
         is_coach = user.is_coach or user.is_staff
         
         queryset = Training.objects.all()
         
-        # Фильтрация по дате
         date_after = self.request.query_params.get('date_after')
         date_before = self.request.query_params.get('date_before')
         
@@ -61,15 +55,12 @@ class TrainingViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(date__lte=date_before)
         
         if user.is_student and not is_coach:
-            # Ученики видят тренировки своих групп
             queryset = queryset.filter(
                 group__students__student=user, 
                 group__students__is_active=True
             ).distinct()
         elif is_coach and not user.is_staff:
-            # Тренеры (не админы) видят тренировки своих групп
             queryset = queryset.filter(group__coach=user)
-        # Администраторы видят все тренировки (уже отфильтрованные по дате)
         
         return queryset
 
@@ -84,17 +75,13 @@ class HomeworkViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        # Администратор автоматически является тренером
         is_coach = user.is_coach or user.is_staff
         if user.is_student and not is_coach:
-            # Ученики видят только свои домашние задания
             return Homework.objects.filter(student=user)
         elif is_coach and not user.is_staff:
-            # Тренеры (не админы) видят домашние задания учеников своих групп
             return Homework.objects.filter(
                 training__group__coach=user
             )
-        # Администраторы видят все домашние задания
         return Homework.objects.all()
 
 class AttendanceViewSet(viewsets.ModelViewSet):
@@ -108,17 +95,13 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        # Администратор автоматически является тренером
         is_coach = user.is_coach or user.is_staff
         if user.is_student and not is_coach:
-            # Ученики видят только свою посещаемость
             return Attendance.objects.filter(student=user)
         elif is_coach and not user.is_staff:
-            # Тренеры (не админы) видят посещаемость учеников своих групп
             return Attendance.objects.filter(
                 training__group__coach=user
             )
-        # Администраторы видят всю посещаемость
         return Attendance.objects.all()
 
 class GroupStudentViewSet(viewsets.ModelViewSet):
@@ -130,10 +113,34 @@ class GroupStudentViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        # Администратор автоматически является тренером
         is_coach = user.is_coach or user.is_staff
         if is_coach and not user.is_staff:
-            # Тренеры (не админы) видят только учеников своих групп
             return GroupStudent.objects.filter(group__coach=user)
-        # Администраторы видят всех учеников
         return GroupStudent.objects.all()
+    
+    def create(self, request, *args, **kwargs):
+        group_id = request.data.get('group')
+        student_id = request.data.get('student')
+        
+        existing = GroupStudent.objects.filter(
+            group_id=group_id,
+            student_id=student_id
+        ).first()
+        
+        if existing:
+            existing.is_active = True
+            existing.save()
+            serializer = self.get_serializer(existing)
+            from rest_framework.response import Response
+            from rest_framework import status
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return super().create(request, *args, **kwargs)
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_active = False
+        instance.save()
+        from rest_framework.response import Response
+        from rest_framework import status
+        return Response(status=status.HTTP_204_NO_CONTENT)

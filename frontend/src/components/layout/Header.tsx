@@ -1,6 +1,6 @@
 import { useAuth } from '../../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
-import { User, LogOut, Settings, Shield } from 'lucide-react'
+import { User, LogOut, Settings } from 'lucide-react'
 
 export default function Header() {
   const { user, logout } = useAuth()
@@ -12,10 +12,11 @@ export default function Header() {
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-primary-700 rounded-lg flex items-center justify-center shadow-lg">
-                <Shield className="w-7 h-7 text-white" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary-500 rounded-full border-2 border-white"></div>
+              <img 
+                src="/logo.png" 
+                alt="Пума-Каратэ" 
+                className="w-14 h-14 rounded-lg shadow-lg object-contain"
+              />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 tracking-tight">

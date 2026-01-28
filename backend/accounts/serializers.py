@@ -1,7 +1,6 @@
-# accounts/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import User, Profile, Achievement, News, ClubTeam  # <-- Важно: импорт ClubTeam
+from .models import User, Profile, Achievement, News, ClubTeam
 
 User = get_user_model()
 
@@ -23,11 +22,20 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name': {'required': True},
         }
     
+    def validate_email(self, value):
+        if value and User.objects.filter(email=value).exclude(pk=self.instance.pk if self.instance else None).exists():
+            raise serializers.ValidationError('Пользователь с таким email уже существует.')
+        return value
+    
+    def validate_username(self, value):
+        if value and User.objects.filter(username=value).exclude(pk=self.instance.pk if self.instance else None).exists():
+            raise serializers.ValidationError('Пользователь с таким именем уже существует.')
+        return value
+    
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         if not password:
             raise serializers.ValidationError({'password': 'Пароль обязателен для регистрации'})
-        # Если пользователь администратор, автоматически делаем его тренером
         if validated_data.get('is_staff'):
             validated_data['is_coach'] = True
         user = User.objects.create(**validated_data)
@@ -36,7 +44,6 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     
     def update(self, instance, validated_data):
-        # Если пользователь администратор, автоматически делаем его тренером
         if validated_data.get('is_staff') or instance.is_staff:
             validated_data['is_coach'] = True
         return super().update(instance, validated_data)
@@ -69,7 +76,25 @@ class NewsSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = ['id', 'author', 'author_name', 'title', 'content', 'image', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        read_only_fields = ['id', 'author', 'created_at']
+        extra_kwargs = {
+            'title': {'required': True},
+            'content': {'required': True},
+        }
+    
+    def validate_title(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError('Заголовок не может быть пустым')
+        return value.strip()
+    
+    def validate_content(self, value):
+        if not value:
+            raise serializers.ValidationError('Содержание не может быть пустым')
+        import re
+        text_content = re.sub(r'<[^>]+>', '', value).strip()
+        if not text_content:
+            raise serializers.ValidationError('Содержание не может быть пустым')
+        return value
 
 
 class ClubTeamSerializer(serializers.ModelSerializer):
@@ -77,7 +102,7 @@ class ClubTeamSerializer(serializers.ModelSerializer):
     student_count = serializers.IntegerField(read_only=True)
     
     class Meta:
-        model = ClubTeam  # <-- Теперь модель определена
+        model = ClubTeam
         fields = ['id', 'name', 'coach', 'coach_name', 'students', 
                  'student_count', 'description', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']

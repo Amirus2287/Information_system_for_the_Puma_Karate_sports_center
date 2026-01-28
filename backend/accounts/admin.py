@@ -1,11 +1,9 @@
-# accounts/admin.py
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Profile, Achievement, News, ClubTeam  # <-- ClubTeam импортирован
+from .models import User, Profile, Achievement, News, ClubTeam
 
 
 class ProfileInline(admin.StackedInline):
-    """Инлайн профиля в админке пользователя"""
     model = Profile
     can_delete = False
     verbose_name_plural = 'Профиль'
@@ -95,5 +93,4 @@ class ClubTeamAdmin(admin.ModelAdmin):
     student_count_display.short_description = 'Количество учеников'
 
 
-# Регистрируем кастомного пользователя
 admin.site.register(User, UserAdmin)

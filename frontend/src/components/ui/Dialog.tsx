@@ -20,10 +20,10 @@ export default function Dialog({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50" />
+        <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-50" />
         <DialogPrimitive.Content className={cn(
           "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-          "w-full max-w-md bg-white rounded-lg shadow-lg p-6",
+          "w-full max-w-md bg-white rounded-lg shadow-lg p-6 z-50 max-h-[90vh] overflow-hidden flex flex-col",
           className
         )}>
           <div className="flex justify-between items-center mb-4">

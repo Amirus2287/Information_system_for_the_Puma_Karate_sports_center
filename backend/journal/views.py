@@ -15,13 +15,10 @@ class JournalViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        # Администратор автоматически является тренером
         is_coach = user.is_coach or user.is_staff
         if is_coach and not user.is_staff:
-            # Тренеры (не админы) видят журналы своих учеников
             return Journal.objects.filter(coach=user)
         elif user.is_staff:
-            # Администраторы видят все журналы
             return Journal.objects.all()
         return Journal.objects.filter(student=user)
 
@@ -34,13 +31,10 @@ class ProgressNoteViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        # Администратор автоматически является тренером
         is_coach = user.is_coach or user.is_staff
         if is_coach and not user.is_staff:
-            # Тренеры (не админы) видят заметки о прогрессе своих учеников
             return ProgressNote.objects.filter(coach=user)
         elif user.is_staff:
-            # Администраторы видят все заметки
             return ProgressNote.objects.all()
         return ProgressNote.objects.filter(student=user)
 
@@ -54,9 +48,7 @@ class TechniqueRecordViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        # Администратор автоматически является тренером
         is_coach = user.is_coach or user.is_staff
         if is_coach:
-            # Тренеры и администраторы видят все записи техник
             return TechniqueRecord.objects.all()
         return TechniqueRecord.objects.filter(student=user)

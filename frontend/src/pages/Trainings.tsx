@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
 import TrainingForm from '../components/trainings/TrainingForm'
 import AttendanceModal from '../components/trainings/AttendanceModal'
-import { Plus, Calendar, Clock, Users, MapPin, BookOpen, CheckCircle, XCircle, User, Filter, X } from 'lucide-react'
+import { Plus, Calendar, Clock, Users, MapPin, User, Filter, X, CheckCircle, XCircle, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function Trainings() {
@@ -40,12 +40,6 @@ export default function Trainings() {
     },
   })
   
-  const { data: homeworks } = useQuery({
-    queryKey: ['homeworks'],
-    queryFn: () => trainingsApi.getHomeworks(),
-    enabled: !!user,
-  })
-  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -63,7 +57,7 @@ export default function Trainings() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Тренировки</h1>
           <p className="text-gray-600 mt-1">
-            {isCoach ? 'Управление тренировками и группами' : 'Расписание тренировок и домашние задания'}
+            {isCoach ? 'Управление тренировками и группами' : 'Расписание тренировок'}
           </p>
         </div>
         
@@ -77,8 +71,7 @@ export default function Trainings() {
         )}
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
+      <div className="space-y-4">
           <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
@@ -163,64 +156,6 @@ export default function Trainings() {
               </div>
             )}
           </div>
-        </div>
-        
-        <div className="space-y-6">
-          <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
-            <div className="flex items-center gap-2 mb-4">
-              <BookOpen className="w-5 h-5 text-primary-600" />
-              <h3 className="font-bold text-gray-900">Домашние задания</h3>
-            </div>
-            
-            {homeworks?.length ? (
-              <div className="space-y-3">
-                {homeworks.slice(0, 5).map((hw: any) => (
-                  <div
-                    key={hw.id}
-                    className="p-4 border-2 border-gray-100 rounded-xl hover:border-primary-200 hover:bg-red-50 transition-all"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="font-medium text-gray-900 text-sm flex-1">
-                        {hw.task.length > 60 ? `${hw.task.slice(0, 60)}...` : hw.task}
-                      </p>
-                      {hw.completed ? (
-                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 ml-2" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 ml-2" />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between mt-2">
-                      <p className="text-xs text-gray-600">
-                        Срок: {new Date(hw.deadline).toLocaleDateString('ru-RU')}
-                      </p>
-                      <span
-                        className={`text-xs font-medium px-2 py-1 rounded-full ${
-                          hw.completed
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}
-                      >
-                        {hw.completed ? 'Выполнено' : 'Не выполнено'}
-                      </span>
-                    </div>
-                    {hw.training_date && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Тренировка: {new Date(hw.training_date).toLocaleDateString('ru-RU')}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">
-                  Нет домашних заданий
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
       
       {isCoach && (
@@ -256,6 +191,19 @@ function TrainingCard({ training, isCoach }: { training: any; isCoach: boolean }
     enabled: !!training.id && isCoach,
   })
   
+  const deleteTrainingMutation = useMutation({
+    mutationFn: () => {
+      return trainingsApi.deleteTraining(training.id)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['trainings'] })
+      toast.success('Тренировка удалена')
+    },
+    onError: () => {
+      toast.error('Ошибка при удалении тренировки')
+    },
+  })
+  
   const toggleAttendanceMutation = useMutation({
     mutationFn: ({ studentId, present }: { studentId: number; present: boolean }) => {
       const existing = attendances?.find((att: any) => att.student === studentId)
@@ -289,13 +237,35 @@ function TrainingCard({ training, isCoach }: { training: any; isCoach: boolean }
   
   const students = groupStudents || []
   
+  const handleDeleteTraining = () => {
+    if (confirm('Вы уверены, что хотите удалить эту тренировку?')) {
+      deleteTrainingMutation.mutate()
+    }
+  }
+  
   return (
     <div className="bg-gradient-to-r from-white to-red-50 border-2 border-gray-100 rounded-xl p-5 hover:border-primary-200 hover:shadow-md transition-all">
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
-          <h3 className="font-bold text-lg text-gray-900 mb-1">
-            {training.group_name || training.group?.name}
-          </h3>
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="font-bold text-lg text-gray-900">
+              {training.group_name || training.group?.name}
+            </h3>
+            {isCoach && (
+              <button
+                onClick={handleDeleteTraining}
+                disabled={deleteTrainingMutation.isPending}
+                className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                title="Удалить тренировку"
+              >
+                {deleteTrainingMutation.isPending ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+              </button>
+            )}
+          </div>
           {training.topic && (
             <p className="text-sm text-gray-600 mb-3">{training.topic}</p>
           )}
@@ -341,11 +311,13 @@ function TrainingCard({ training, isCoach }: { training: any; isCoach: boolean }
       
       {isCoach && (
         <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <User className="w-4 h-4 text-primary-600" />
-            <span className="font-medium text-sm text-gray-700">
-              Ученики группы ({students.length})
-            </span>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4 text-primary-600" />
+              <span className="font-medium text-sm text-gray-700">
+                Ученики группы ({students.length})
+              </span>
+            </div>
           </div>
           
           <div className="space-y-2">

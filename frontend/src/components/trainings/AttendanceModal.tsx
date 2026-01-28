@@ -86,7 +86,16 @@ export default function AttendanceModal({ open, onClose, training }: AttendanceM
   })) || []
   
   return (
-    <Dialog open={open} onOpenChange={onClose} title="Отметка посещаемости">
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          onClose()
+          reset()
+        }
+      }} 
+      title="Отметка посещаемости"
+    >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Select 
           label="Ученик" 

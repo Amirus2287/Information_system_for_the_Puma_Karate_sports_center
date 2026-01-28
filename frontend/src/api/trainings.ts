@@ -61,6 +61,11 @@ export const trainingsApi = {
     return response.data
   },
   
+  deleteHomework: async (id: number) => {
+    const response = await api.delete(`/api/trainings/homeworks/${id}/`)
+    return response.data
+  },
+  
   getAttendances: async (params?: any) => {
     const response = await api.get('/api/trainings/attendances/', { params })
     return response.data

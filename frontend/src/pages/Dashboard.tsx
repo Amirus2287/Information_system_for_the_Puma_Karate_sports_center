@@ -39,6 +39,12 @@ export default function Dashboard() {
     enabled: !!user && isStudent,
   })
   
+  const { data: news } = useQuery({
+    queryKey: ['news', 'dashboard'],
+    queryFn: () => usersApi.getNews(),
+    enabled: !!user,
+  })
+  
   const { data: allUsers } = useQuery({
     queryKey: ['users', 'dashboard'],
     queryFn: () => usersApi.getUsers(),
@@ -89,7 +95,7 @@ export default function Dashboard() {
           icon: Users,
           title: 'Управление группами',
           description: 'Формировать группы и добавлять учеников',
-          onClick: () => navigate('/trainings'),
+          onClick: () => navigate('/groups'),
           gradient: 'from-primary-500 to-primary-600'
         },
         {
@@ -179,6 +185,51 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+      
+      {news && news.length > 0 && (
+        <div className="bg-white border-2 border-gray-100 rounded-2xl p-8 shadow-elegant">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Последние новости</h2>
+            {isAdmin && (
+              <button 
+                onClick={() => navigate('/admin/news')}
+                className="text-primary-600 hover:text-primary-700 font-medium"
+              >
+                Управление новостями
+              </button>
+            )}
+          </div>
+          <div className="space-y-4">
+            {news.slice(0, 3).map((item: any) => (
+              <div
+                key={item.id}
+                className="p-5 border-2 border-gray-100 rounded-xl hover:border-primary-200 hover:bg-red-50 transition-all"
+              >
+                <div className="flex items-start gap-3 mb-2">
+                  <Newspaper className="w-5 h-5 text-primary-600 flex-shrink-0 mt-1" />
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg text-gray-900 mb-2">{item.title}</h3>
+                    <div 
+                      className="text-sm text-gray-600 mb-3 line-clamp-2 prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: item.content }}
+                    />
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <span>Автор: {item.author_name || 'Неизвестен'}</span>
+                      <span>
+                        {new Date(item.created_at).toLocaleDateString('ru-RU', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       {isStudent && trainings && trainings.length > 0 && (
         <div className="bg-white border-2 border-gray-100 rounded-2xl p-8 shadow-elegant">

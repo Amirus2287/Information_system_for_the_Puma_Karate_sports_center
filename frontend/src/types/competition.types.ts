@@ -26,5 +26,4 @@ export interface CompetitionRegistration {
   registered_at: string
 }
 
-// Тип для создания регистрации (без полей, которые заполняются на сервере)
 export type CreateCompetitionRegistration = Omit<CompetitionRegistration, 'id' | 'user' | 'is_confirmed' | 'registered_at'>

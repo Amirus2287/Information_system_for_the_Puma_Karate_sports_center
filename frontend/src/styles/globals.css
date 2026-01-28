@@ -82,3 +82,49 @@
     @apply h-1 w-20 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full;
   }
 }
+
+@layer base {
+  .ql-font-arial {
+    font-family: Arial, sans-serif;
+  }
+
+  .ql-font-times-new-roman {
+    font-family: "Times New Roman", serif;
+  }
+
+  .ql-font-calibri {
+    font-family: Calibri, "Segoe UI", sans-serif;
+  }
+
+  .ql-font-georgia {
+    font-family: Georgia, serif;
+  }
+
+  .ql-font-verdana {
+    font-family: Verdana, sans-serif;
+  }
+
+  .ql-font-courier-new {
+    font-family: "Courier New", Courier, monospace;
+  }
+
+  .ql-font-comic-sans-ms {
+    font-family: "Comic Sans MS", sans-serif;
+  }
+
+  .ql-font-impact {
+    font-family: Impact, "Arial Black", sans-serif;
+  }
+
+  .ql-font-lucida-console {
+    font-family: "Lucida Console", Monaco, monospace;
+  }
+
+  .ql-font-tahoma {
+    font-family: Tahoma, sans-serif;
+  }
+
+  .ql-font-trebuchet-ms {
+    font-family: "Trebuchet MS", sans-serif;
+  }
+}

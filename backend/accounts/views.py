@@ -1,4 +1,3 @@
-# accounts/views.py
 from rest_framework import viewsets, generics, permissions, status, filters
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
@@ -27,27 +26,28 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_staff:
-            # Администраторы видят всех пользователей
             return User.objects.all()
         elif user.is_coach:
-            # Тренеры видят учеников своих групп
             from trainings.models import GroupStudent
             student_ids = GroupStudent.objects.filter(
                 group__coach=user,
                 is_active=True
             ).values_list('student_id', flat=True)
             return User.objects.filter(id__in=student_ids)
-        # Ученики видят только себя
         return User.objects.filter(id=user.id)
     
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            # Только администраторы могут создавать/редактировать пользователей
             return [IsAdmin()]
         return [permissions.IsAuthenticated()]
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get', 'patch'])
     def me(self, request):
+        if request.method == 'PATCH':
+            serializer = self.get_serializer(request.user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
@@ -56,6 +56,20 @@ class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['user']
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return Profile.objects.all()
+        return Profile.objects.filter(user=user)
+    
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        profile, created = Profile.objects.get_or_create(user=request.user)
+        serializer = self.get_serializer(profile)
+        return Response(serializer.data)
 
 
 class AchievementViewSet(viewsets.ModelViewSet):
@@ -70,10 +84,13 @@ class AchievementViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_student and not user.is_coach:
-            # Ученики видят только свои достижения
             return Achievement.objects.filter(user=user)
-        # Тренеры и администраторы видят все достижения
         return Achievement.objects.all()
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsCoachOrAdmin()]
+        return [permissions.IsAuthenticated()]
 
 
 class NewsViewSet(viewsets.ModelViewSet):
@@ -86,12 +103,10 @@ class NewsViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            # Только администраторы могут создавать/редактировать новости
             return [IsAdmin()]
         return [permissions.IsAuthenticated()]
     
     def perform_create(self, serializer):
-        # Автоматически устанавливаем автора при создании новости
         serializer.save(author=self.request.user)
 
 
@@ -101,7 +116,6 @@ class ClubTeamViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
-# Дополнительные View
 @method_decorator(csrf_exempt, name='dispatch')
 @method_decorator(ensure_csrf_cookie, name='dispatch')
 class RegisterView(generics.CreateAPIView):
@@ -113,7 +127,6 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
-        # Автоматически логиним пользователя после регистрации
         login(request, user)
         
         return Response({
@@ -164,7 +177,6 @@ def logout_view(request):
 @permission_classes([permissions.AllowAny])
 @ensure_csrf_cookie
 def csrf_token(request):
-    """Получение CSRF токена для фронтенда"""
     from django.middleware.csrf import get_token
     token = get_token(request)
     return Response({'csrfToken': token})

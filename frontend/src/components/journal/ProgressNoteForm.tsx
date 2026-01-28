@@ -36,7 +36,16 @@ export default function ProgressNoteForm({ open, onClose }: ProgressNoteFormProp
   }
   
   return (
-    <Dialog open={open} onOpenChange={onClose} title="Новая заметка о прогрессе">
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          onClose()
+          reset()
+        }
+      }} 
+      title="Новая заметка о прогрессе"
+    >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
           label="Категория"

@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Shield } from 'lucide-react'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -12,10 +11,11 @@ export default function Home() {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <div className="w-14 h-14 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl flex items-center justify-center shadow-lg">
-                  <Shield className="w-8 h-8 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary-500 rounded-full border-2 border-white"></div>
+                <img 
+                  src="/logo.png" 
+                  alt="Пума-Каратэ" 
+                  className="w-16 h-16 rounded-xl shadow-lg object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Пума-Каратэ</h1>
@@ -80,9 +80,11 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-6 md:mb-0">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                  <span className="text-primary-500 font-bold text-xl">ПК</span>
-                </div>
+                <img 
+                  src="/logo.png" 
+                  alt="Пума-Каратэ" 
+                  className="w-12 h-12 rounded-lg object-contain"
+                />
                 <div>
                   <h3 className="text-xl font-bold">Пума-Каратэ</h3>
                   <p className="text-gray-400">Спортивный центр</p>

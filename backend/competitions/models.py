@@ -9,6 +9,7 @@ class Competition(models.Model):
     date = models.DateField()
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
+    visible_groups = models.ManyToManyField('trainings.Group', related_name='competitions', blank=True, verbose_name='Видимые группы')
     
     class Meta:
         verbose_name = 'Соревнование'

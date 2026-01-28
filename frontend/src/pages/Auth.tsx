@@ -20,7 +20,9 @@ export default function Auth() {
       toast.success('Вход выполнен успешно!')
       navigate('/dashboard')
     } catch (error: any) {
-      console.error('Login error:', error)
+      if (import.meta.env.DEV) {
+        console.error('Login error:', error)
+      }
     }
   }
   
@@ -38,7 +40,9 @@ export default function Auth() {
         navigate('/dashboard')
       }
     } catch (error: any) {
-      console.error('Register error:', error)
+      if (import.meta.env.DEV) {
+        console.error('Register error:', error)
+      }
     }
   }
   

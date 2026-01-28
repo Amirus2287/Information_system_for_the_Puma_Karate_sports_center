@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Trophy, Calendar, BookOpen, Newspaper, UserCog, Users } from 'lucide-react'
+import { LayoutDashboard, Trophy, Calendar, BookOpen, Newspaper, UserCog, Users, FileText } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 
 export default function Sidebar() {
@@ -8,9 +8,10 @@ export default function Sidebar() {
   const isCoach = user?.is_coach || isAdmin
   
   const baseNavItems = [
-    { to: '/dashboard', icon: LayoutDashboard, label: 'Дашборд' },
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Главная' },
     { to: '/competitions', icon: Trophy, label: 'Соревнования' },
     { to: '/trainings', icon: Calendar, label: 'Тренировки' },
+    { to: '/homeworks', icon: FileText, label: 'Домашние задания' },
     { to: '/journal', icon: BookOpen, label: 'Журнал' },
   ]
   

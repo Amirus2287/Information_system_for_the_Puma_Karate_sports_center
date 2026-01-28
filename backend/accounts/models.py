@@ -19,7 +19,6 @@ class User(AbstractUser):
         return f"{self.first_name} {self.last_name}"
     
     def save(self, *args, **kwargs):
-        # Если пользователь администратор, автоматически делаем его тренером
         if self.is_staff:
             self.is_coach = True
         super().save(*args, **kwargs)
@@ -28,20 +27,16 @@ class User(AbstractUser):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     
-    # Дополнительная информация
     bio = models.TextField('Биография', max_length=1000, blank=True)
     location = models.CharField('Город', max_length=100, blank=True)
     grade = models.CharField('Разряд/Кю/Дан', max_length=50, blank=True)
     years_of_practice = models.IntegerField('Лет занятий каратэ', default=0)
     
-    # Контактная информация родителей (для студентов)
     parent_name = models.CharField('Имя родителя', max_length=255, blank=True)
     parent_phone = models.CharField('Телефон родителя', max_length=20, blank=True)
     
-    # Медицинская информация
     medical_notes = models.TextField('Медицинские показания', blank=True)
     
-    # Спортивная информация
     competitions_participated = models.IntegerField('Участие в соревнованиях', default=0)
     competitions_won = models.IntegerField('Побед в соревнованиях', default=0)
     
@@ -95,17 +90,14 @@ class News(models.Model):
         return self.title
 
 
-# Сигналы для автоматического создания профиля
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
-    """Автоматически создает профиль при создании пользователя"""
     if created:
         Profile.objects.create(user=instance)
 
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    """Автоматически сохраняет профиль при сохранении пользователя"""
     if hasattr(instance, 'profile'):
         instance.profile.save()
 

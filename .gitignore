@@ -118,7 +118,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-# РАСКОММЕНТИРУЙТЕ для продакшена
 .env
 .env.local
 .envrc
@@ -290,62 +289,39 @@ storybook-static
 # PROJECT SPECIFIC
 # ============================================
 
-# Django media and static files (можно коммитить для разработки)
-# Раскомментируйте для продакшена:
-# media/
-# staticfiles/
+media/
+staticfiles/
 
-# Локальная база данных SQLite
 *.sqlite3
 *.db
 
-# Миграции Django (ОСТАВИТЬ в репозитории!)
-# НЕ игнорировать:
-# backend/accounts/migrations/
-# backend/competitions/migrations/
-# backend/trainings/migrations/
-
-# Файлы операционной системы
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Временные файлы
 *.tmp
 *.temp
 *~
 *.swp
 *.swo
 
-# Резервные копии
 *.bak
 *.backup
 
-# Логи
 *.log
 logs/
 
-# ============================================
-# ДОПОЛНИТЕЛЬНО ДЛЯ ВАШЕГО ПРОЕКТА
-# ============================================
-
-# Конфигурационные файлы IDE
 *.code-workspace
 
-# Файлы сборки Docker
 docker-compose.override.yml
 
-# Файлы для разработки
 docker-compose.dev.yml
 
-# Локальные настройки
 config/local.py
 config/development.py
 
-# Файлы тестовых данных
 fixtures/
 test_data/
 
-# Файлы загрузок
 uploads/
 downloads/

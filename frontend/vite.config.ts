@@ -10,16 +10,15 @@ export default defineConfig({
     },
   },
   server: {
-    host: '0.0.0.0',  // Разрешить доступ со всех интерфейсов
+    host: '0.0.0.0',
     port: 5173,
-    strictPort: true,  // Не менять порт если занят
-    open: true,        // Автоматически открывать браузер
+    strictPort: true,
+    open: true,
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path,
       },
     },
   },

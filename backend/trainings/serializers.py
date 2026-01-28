@@ -33,14 +33,20 @@ class TrainingSerializer(serializers.ModelSerializer):
 
 class HomeworkSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.get_full_name', read_only=True)
-    training_date = serializers.DateField(source='training.date', read_only=True)
-    training_topic = serializers.CharField(source='training.topic', read_only=True)
+    training_date = serializers.SerializerMethodField()
+    training_topic = serializers.SerializerMethodField()
     
     class Meta:
         model = Homework
         fields = ['id', 'training', 'training_date', 'training_topic', 'student', 
                  'student_name', 'task', 'deadline', 'completed', 'created_at']
         read_only_fields = ['created_at']
+    
+    def get_training_date(self, obj):
+        return obj.training.date if obj.training else None
+    
+    def get_training_topic(self, obj):
+        return obj.training.topic if obj.training else None
 
 class AttendanceSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.get_full_name', read_only=True)

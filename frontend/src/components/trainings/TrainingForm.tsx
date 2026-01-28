@@ -56,7 +56,16 @@ export default function TrainingForm({ open, onClose, initialDate, initialTime }
   }
   
   return (
-    <Dialog open={open} onOpenChange={onClose} title="Новая тренировка">
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          onClose()
+          reset()
+        }
+      }} 
+      title="Новая тренировка"
+    >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Select label="Группа" {...register('group')}>
           <option value="">Выберите группу</option>

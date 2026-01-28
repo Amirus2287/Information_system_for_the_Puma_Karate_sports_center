@@ -1,14 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { usersApi } from '../../api/users'
+import { useAuth } from '../../hooks/useAuth'
 import Button from '../../components/ui/Button'
-import { Plus, Edit, Trash2, UserCog, Search } from 'lucide-react'
+import AchievementForm from '../../components/achievements/AchievementForm'
+import { Plus, Edit, Trash2, UserCog, Search, Award } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function UsersManagement() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const isCoach = user?.is_coach || user?.is_staff
   const [editingUser, setEditingUser] = useState<any>(null)
   const [showForm, setShowForm] = useState(false)
+  const [showAchievementForm, setShowAchievementForm] = useState(false)
+  const [selectedStudentForAchievement, setSelectedStudentForAchievement] = useState<number | undefined>(undefined)
   const [searchTerm, setSearchTerm] = useState('')
   
   const { data: users, isLoading } = useQuery({
@@ -124,6 +130,19 @@ export default function UsersManagement() {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex justify-end gap-2">
+                        {isCoach && user.is_student && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedStudentForAchievement(user.id)
+                              setShowAchievementForm(true)
+                            }}
+                            leftIcon={<Award className="w-4 h-4" />}
+                          >
+                            Добавить достижение
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="outline"
@@ -163,6 +182,17 @@ export default function UsersManagement() {
         <UserForm
           user={editingUser}
           onClose={() => { setShowForm(false); setEditingUser(null) }}
+        />
+      )}
+      
+      {showAchievementForm && (
+        <AchievementForm
+          open={showAchievementForm}
+          onClose={() => {
+            setShowAchievementForm(false)
+            setSelectedStudentForAchievement(undefined)
+          }}
+          studentId={selectedStudentForAchievement}
         />
       )}
     </div>
@@ -209,8 +239,20 @@ function UserForm({ user, onClose }: { user: any; onClose: () => void }) {
     mutation.mutate(formData)
   }
   
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [onClose])
+  
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={(e) => {
+      if (e.target === e.currentTarget) onClose()
+    }}>
       <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           {user ? 'Редактировать пользователя' : 'Создать пользователя'}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { trainingsApi } from '../api/trainings'
 import { usersApi } from '../api/users'
@@ -32,7 +32,7 @@ export default function Groups() {
   
   const { data: groupStudents } = useQuery({
     queryKey: ['group-students', selectedGroup?.id],
-    queryFn: () => trainingsApi.getGroupStudents({ group: selectedGroup?.id }),
+    queryFn: () => trainingsApi.getGroupStudents({ group: selectedGroup?.id, is_active: true }),
     enabled: !!selectedGroup?.id,
   })
   
@@ -120,7 +120,7 @@ export default function Groups() {
                 </div>
               </div>
               
-              <div className="flex gap-2 mt-4">
+              <div className="flex gap-2 mt-4 items-center">
                 <Button
                   size="sm"
                   variant="outline"
@@ -136,23 +136,28 @@ export default function Groups() {
                 <Button
                   size="sm"
                   variant="outline"
+                  className="flex-1"
                   onClick={() => { setEditingGroup(group); setShowGroupForm(true) }}
                   leftIcon={<Edit className="w-4 h-4" />}
                 >
                   Редактировать
                 </Button>
-                <Button
-                  size="sm"
-                  variant="danger"
+                <button
                   onClick={() => {
-                    if (confirm('Вы уверены, что хотите удалить эту группу?')) {
+                    if (window.confirm(`Вы уверены, что хотите удалить группу "${group.name}"?`)) {
                       deleteMutation.mutate(group.id)
                     }
                   }}
-                  leftIcon={<Trash2 className="w-4 h-4" />}
+                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Удалить группу"
+                  disabled={deleteMutation.isPending}
                 >
-                  Удалить
-                </Button>
+                  {deleteMutation.isPending ? (
+                    <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                </button>
               </div>
             </div>
           ))
@@ -225,8 +230,20 @@ function GroupForm({ group, onClose }: { group: any; onClose: () => void }) {
     mutation.mutate(formData)
   }
   
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [onClose])
+  
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={(e) => {
+      if (e.target === e.currentTarget) onClose()
+    }}>
       <div className="bg-white rounded-2xl p-6 w-full max-w-2xl">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           {group ? 'Редактировать группу' : 'Создать группу'}
@@ -308,7 +325,7 @@ function GroupStudentsModal({ group, onClose }: { group: any; onClose: () => voi
   
   const { data: groupStudents, refetch } = useQuery({
     queryKey: ['group-students', group.id],
-    queryFn: () => trainingsApi.getGroupStudents({ group: group.id }),
+    queryFn: () => trainingsApi.getGroupStudents({ group: group.id, is_active: true }),
   })
   
   const addStudentMutation = useMutation({

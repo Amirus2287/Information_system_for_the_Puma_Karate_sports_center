@@ -20,7 +20,9 @@ export const useAuth = create<AuthState>()(
         try {
           await authApi.logout()
         } catch (error) {
-          console.error('Logout error:', error)
+          if (import.meta.env.DEV) {
+            console.error('Logout error:', error)
+          }
         } finally {
           set({ user: null, isAuthenticated: false })
         }

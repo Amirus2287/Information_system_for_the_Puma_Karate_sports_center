@@ -55,4 +55,40 @@ export const usersApi = {
     const response = await api.delete(`/api/auth/news/${id}/`)
     return response.data
   },
+  
+  getProfile: async (userId?: number) => {
+    if (userId) {
+      const response = await api.get(`/api/auth/profiles/?user=${userId}`)
+      const data = response.data
+      return Array.isArray(data) ? (data.length > 0 ? data[0] : null) : data
+    } else {
+      const response = await api.get('/api/auth/profiles/me/')
+      return response.data
+    }
+  },
+  
+  createProfile: async (data: any) => {
+    const response = await api.post('/api/auth/profiles/', data)
+    return response.data
+  },
+  
+  updateProfile: async (profileId: number, data: any) => {
+    const response = await api.patch(`/api/auth/profiles/${profileId}/`, data)
+    return response.data
+  },
+  
+  updateMe: async (data: any) => {
+    const response = await api.patch('/api/auth/users/me/', data)
+    return response.data
+  },
+  
+  updateAchievement: async (id: number, data: any) => {
+    const response = await api.patch(`/api/auth/achievements/${id}/`, data)
+    return response.data
+  },
+  
+  deleteAchievement: async (id: number) => {
+    const response = await api.delete(`/api/auth/achievements/${id}/`)
+    return response.data
+  },
 }

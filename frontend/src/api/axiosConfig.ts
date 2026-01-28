@@ -63,7 +63,7 @@ api.interceptors.request.use(
       }
     }
     
-    if (config.url?.includes('/register/') || config.url?.includes('/login/')) {
+    if (import.meta.env.DEV && (config.url?.includes('/register/') || config.url?.includes('/login/'))) {
       console.log('API Request:', {
         url: config.url,
         method: config.method,
@@ -80,7 +80,7 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => {
-    if (response.config.url?.includes('/register/') || response.config.url?.includes('/login/')) {
+    if (import.meta.env.DEV && (response.config.url?.includes('/register/') || response.config.url?.includes('/login/'))) {
       console.log('API Response:', {
         url: response.config.url,
         status: response.status,
@@ -90,7 +90,7 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
-    if (error.config?.url?.includes('/register/') || error.config?.url?.includes('/login/')) {
+    if (import.meta.env.DEV && error.config?.url?.includes('/register/') || error.config?.url?.includes('/login/')) {
       console.error('API Error:', {
         url: error.config?.url,
         status: error.response?.status,

@@ -44,7 +44,7 @@ class Training(models.Model):
         return f"{self.group} - {self.date}"
 
 class Homework(models.Model):
-    training = models.ForeignKey(Training, on_delete=models.CASCADE, related_name='homeworks')
+    training = models.ForeignKey(Training, on_delete=models.CASCADE, related_name='homeworks', null=True, blank=True)
     student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'is_student': True}, related_name='homeworks')
     task = models.TextField()
     deadline = models.DateField()
