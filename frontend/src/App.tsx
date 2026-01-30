@@ -14,6 +14,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute'
 import Home from './pages/Home'
 import NewsManagement from './pages/admin/NewsManagement'
 import UsersManagement from './pages/admin/UsersManagement'
+import GymsManagement from './pages/admin/GymsManagement'
 import Groups from './pages/Groups'
 import ErrorBoundary from './components/common/ErrorBoundary'
 
@@ -72,6 +73,7 @@ export default function App() {
                 <Route path="/groups" element={<Groups />} />
                 <Route path="/admin/news" element={<NewsManagement />} />
                 <Route path="/admin/users" element={<UsersManagement />} />
+                <Route path="/admin/gyms" element={<GymsManagement />} />
               </Route>
             </Route>
             

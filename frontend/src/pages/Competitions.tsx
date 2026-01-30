@@ -14,11 +14,12 @@ export default function Competitions() {
   const isCoach = user?.is_coach || isAdmin
   const [showForm, setShowForm] = useState(false)
   const [editingCompetition, setEditingCompetition] = useState<any>(null)
+  const [filterByAge, setFilterByAge] = useState(false)
   const queryClient = useQueryClient()
   
   const { data: competitions, isLoading } = useQuery({
-    queryKey: ['competitions'],
-    queryFn: () => competitionsApi.getCompetitions(),
+    queryKey: ['competitions', filterByAge],
+    queryFn: () => competitionsApi.getCompetitions({ filter_by_age: filterByAge }),
   })
   
   const deleteMutation = useMutation({
@@ -61,7 +62,7 @@ export default function Competitions() {
   
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Соревнования</h1>
           <p className="text-gray-600 mt-1">
@@ -69,14 +70,27 @@ export default function Competitions() {
           </p>
         </div>
         
-        {isCoach && (
-          <Button 
-            leftIcon={<Plus className="w-4 h-4" />}
-            onClick={() => setShowForm(true)}
-          >
-            Новое соревнование
-          </Button>
-        )}
+        <div className="flex items-center gap-4">
+          {!isAdmin && (
+            <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={filterByAge}
+                onChange={(e) => setFilterByAge(e.target.checked)}
+                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+              />
+              <span>Только по моему возрасту</span>
+            </label>
+          )}
+          {isCoach && (
+            <Button 
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={() => setShowForm(true)}
+            >
+              Новое соревнование
+            </Button>
+          )}
+        </div>
       </div>
       
       {showForm && (

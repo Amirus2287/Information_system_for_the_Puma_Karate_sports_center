@@ -10,9 +10,13 @@ from accounts.permissions import IsCoachOrAdmin
 class GymViewSet(viewsets.ModelViewSet):
     queryset = Gym.objects.all()
     serializer_class = GymSerializer
-    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['name', 'address']
+
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve'):
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()

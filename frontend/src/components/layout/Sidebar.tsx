@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Trophy, Calendar, BookOpen, Newspaper, UserCog, Users, FileText } from 'lucide-react'
+import { LayoutDashboard, Trophy, Calendar, BookOpen, Newspaper, UserCog, Users, FileText, MapPin } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 
 export default function Sidebar() {
@@ -22,6 +22,7 @@ export default function Sidebar() {
   const adminNavItems = [
     { to: '/admin/news', icon: Newspaper, label: 'Новости' },
     { to: '/admin/users', icon: UserCog, label: 'Пользователи' },
+    { to: '/admin/gyms', icon: MapPin, label: 'Залы' },
   ]
   
   let navItems = [...baseNavItems]

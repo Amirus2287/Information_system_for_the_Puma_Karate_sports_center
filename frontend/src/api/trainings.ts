@@ -45,6 +45,21 @@ export const trainingsApi = {
     const response = await api.get('/api/trainings/gyms/')
     return response.data
   },
+
+  createGym: async (data: any) => {
+    const response = await api.post('/api/trainings/gyms/', data)
+    return response.data
+  },
+
+  updateGym: async (id: number, data: any) => {
+    const response = await api.patch(`/api/trainings/gyms/${id}/`, data)
+    return response.data
+  },
+
+  deleteGym: async (id: number) => {
+    const response = await api.delete(`/api/trainings/gyms/${id}/`)
+    return response.data
+  },
   
   getHomeworks: async (params?: any) => {
     const response = await api.get('/api/trainings/homeworks/', { params })

@@ -46,8 +46,9 @@ class CompetitionViewSet(viewsets.ModelViewSet):
             else:
                 queryset = queryset.filter(visible_groups_count=0)
             
+            filter_by_age = self.request.query_params.get('filter_by_age', 'false').lower() == 'true'
             user_age = _user_age(user)
-            if user_age is not None:
+            if filter_by_age and user_age is not None:
                 has_any_category = CompetitionCategory.objects.filter(competition_id=OuterRef('pk'))
                 age_match = CompetitionCategory.objects.filter(
                     competition_id=OuterRef('pk')

@@ -7,7 +7,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.utils.decorators import method_decorator
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import User, Profile, Achievement, News
-from .permissions import IsAdmin, IsCoachOrAdmin
+from .permissions import IsAdmin, IsCoachOrAdmin, IsAdminOrSelfUser
 from .serializers import (
     UserSerializer, ProfileSerializer, AchievementSerializer, 
     NewsSerializer
@@ -38,8 +38,10 @@ class UserViewSet(viewsets.ModelViewSet):
         return User.objects.filter(id=user.id)
     
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['create', 'destroy']:
             return [IsAdmin()]
+        if self.action in ['update', 'partial_update']:
+            return [IsAdminOrSelfUser()]
         return [permissions.IsAuthenticated()]
     
     @action(detail=False, methods=['get', 'patch'])

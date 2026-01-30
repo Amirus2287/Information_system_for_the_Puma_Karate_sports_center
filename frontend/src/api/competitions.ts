@@ -2,8 +2,10 @@ import api from './axiosConfig'
 import type { Competition, CompetitionCategory, CompetitionRegistration } from '../types/competition.types'
 
 export const competitionsApi = {
-  getCompetitions: async (): Promise<Competition[]> => {
-    const response = await api.get('/api/competitions/competitions/')
+  getCompetitions: async (params?: { filter_by_age?: boolean }): Promise<Competition[]> => {
+    const response = await api.get('/api/competitions/competitions/', {
+      params: params?.filter_by_age !== undefined ? { filter_by_age: params.filter_by_age } : undefined,
+    })
     return response.data
   },
   

@@ -19,3 +19,12 @@ class IsCoachOrAdmin(permissions.BasePermission):
             request.user.is_authenticated and 
             (request.user.is_coach or request.user.is_staff)
         )
+
+
+class IsAdminOrSelfUser(permissions.BasePermission):
+    """Разрешает изменение только своего пользователя (или админу — любого)."""
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated)
+
+    def has_object_permission(self, request, view, obj):
+        return request.user.is_staff or request.user == obj
