@@ -1,0 +1,232 @@
+import { useQuery } from '@tanstack/react-query'
+import { usersApi } from '../../api/users'
+import Dialog from '../ui/Dialog'
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  Award,
+  MapPin,
+  CreditCard,
+  Heart,
+  Users,
+  FileText,
+} from 'lucide-react'
+
+interface StudentInfoDialogProps {
+  open: boolean
+  onClose: () => void
+  userId: number | null
+}
+
+function formatDate(value: string | null | undefined) {
+  if (!value) return '—'
+  try {
+    return new Date(value).toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
+  } catch {
+    return '—'
+  }
+}
+
+export default function StudentInfoDialog({ open, onClose, userId }: StudentInfoDialogProps) {
+  const { data: user, isLoading: userLoading } = useQuery({
+    queryKey: ['user', userId],
+    queryFn: () => usersApi.getUser(userId!),
+    enabled: open && !!userId,
+  })
+
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ['profile', userId],
+    queryFn: () => usersApi.getProfile(userId!),
+    enabled: open && !!userId,
+  })
+
+  const { data: achievements } = useQuery({
+    queryKey: ['achievements', userId],
+    queryFn: () => usersApi.getAchievements({ user: userId }),
+    enabled: open && !!userId,
+  })
+
+  const isLoading = userLoading || profileLoading
+
+  if (!userId) return null
+
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()} title="Информация об ученике" className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary-600 border-t-transparent" />
+        </div>
+      ) : !user ? (
+        <p className="text-gray-500 py-4">Не удалось загрузить данные</p>
+      ) : (
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 p-4 bg-primary-50 rounded-xl border border-primary-100">
+            <div className="w-14 h-14 rounded-full bg-primary-600 flex items-center justify-center text-white text-xl font-bold">
+              {(user.first_name?.[0] || '') + (user.last_name?.[0] || '')}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xl font-bold text-gray-900">
+                {user.first_name} {user.last_name}
+              </h2>
+              <p className="text-sm text-gray-600">{user.username}</p>
+              {user.age != null && (
+                <p className="text-sm text-gray-600">Возраст: {user.age} лет</p>
+              )}
+              {profile && (
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+                  {[profile.passport_series, profile.passport_number].some(Boolean) && (
+                    <span>Паспорт: {[profile.passport_series, profile.passport_number].filter(Boolean).join(' ') || '—'}</span>
+                  )}
+                  {(profile.snils != null && profile.snils !== '') && (
+                    <span>СНИЛС: {profile.snils}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid gap-4">
+            <section className="p-4 border border-gray-200 rounded-xl">
+              <h3 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
+                <User className="w-4 h-4 text-primary-600" />
+                Основная информация
+              </h3>
+              <dl className="grid gap-2 text-sm">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-gray-500">Email</dt>
+                  <dd className="text-gray-900 flex items-center gap-1">
+                    <Mail className="w-3 h-3 text-gray-400" />
+                    {user.email || '—'}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-gray-500">Телефон</dt>
+                  <dd className="text-gray-900 flex items-center gap-1">
+                    <Phone className="w-3 h-3 text-gray-400" />
+                    {user.phone || '—'}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-gray-500">Дата рождения</dt>
+                  <dd className="text-gray-900 flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-gray-400" />
+                    {user.date_of_birth ? formatDate(user.date_of_birth) : '—'}
+                  </dd>
+                </div>
+              </dl>
+            </section>
+
+            {profile && (
+              <>
+                <section className="p-4 border border-gray-200 rounded-xl">
+                  <h3 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
+                    <CreditCard className="w-4 h-4 text-primary-600" />
+                    Паспортные данные и СНИЛС
+                  </h3>
+                  <dl className="grid gap-2 text-sm">
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-gray-500">Серия и номер</dt>
+                      <dd className="text-gray-900">
+                        {[profile.passport_series, profile.passport_number].filter(Boolean).join(' ') || '—'}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-gray-500">Кем выдан</dt>
+                      <dd className="text-gray-900">{profile.passport_issued_by || '—'}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-gray-500">СНИЛС</dt>
+                      <dd className="text-gray-900">{profile.snils || '—'}</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <section className="p-4 border border-gray-200 rounded-xl">
+                  <h3 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
+                    <FileText className="w-4 h-4 text-primary-600" />
+                    Профиль
+                  </h3>
+                  <dl className="grid gap-2 text-sm">
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-gray-500">Город</dt>
+                      <dd className="text-gray-900 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-gray-400" />
+                        {profile.location || '—'}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-gray-500">Разряд/Кю/Дан</dt>
+                      <dd className="text-gray-900">{profile.grade || '—'}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-gray-500">Лет занятий</dt>
+                      <dd className="text-gray-900">{profile.years_of_practice ?? '—'}</dd>
+                    </div>
+                    {profile.bio && (
+                      <div>
+                        <dt className="text-gray-500 mb-1">Биография</dt>
+                        <dd className="text-gray-900 text-sm">{profile.bio}</dd>
+                      </div>
+                    )}
+                  </dl>
+                </section>
+
+                <section className="p-4 border border-gray-200 rounded-xl">
+                  <h3 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
+                    <Users className="w-4 h-4 text-primary-600" />
+                    Контакт родителя
+                  </h3>
+                  <dl className="grid gap-2 text-sm">
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-gray-500">Имя родителя</dt>
+                      <dd className="text-gray-900">{profile.parent_name || '—'}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-gray-500">Телефон родителя</dt>
+                      <dd className="text-gray-900">{profile.parent_phone || '—'}</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                {profile.medical_notes && (
+                  <section className="p-4 border border-gray-200 rounded-xl">
+                    <h3 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
+                      <Heart className="w-4 h-4 text-primary-600" />
+                      Медицинские показания
+                    </h3>
+                    <p className="text-sm text-gray-700">{profile.medical_notes}</p>
+                  </section>
+                )}
+              </>
+            )}
+
+            <section className="p-4 border border-gray-200 rounded-xl">
+              <h3 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
+                <Award className="w-4 h-4 text-primary-600" />
+                Достижения
+              </h3>
+              {achievements?.length ? (
+                <ul className="space-y-2">
+                  {achievements.map((a: any) => (
+                    <li key={a.id} className="flex justify-between items-start gap-2 text-sm py-2 border-b border-gray-100 last:border-0">
+                      <span className="font-medium text-gray-900">{a.title}</span>
+                      <span className="text-gray-500 shrink-0">{formatDate(a.date)}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500">Нет достижений</p>
+              )}
+            </section>
+          </div>
+        </div>
+      )}
+    </Dialog>
+  )
+}

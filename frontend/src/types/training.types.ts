@@ -2,7 +2,8 @@ export interface Gym {
   id: number
   name: string
   address: string
-  work_time: string
+  work_start: string  // Время начала работы зала (HH:MM:SS)
+  work_end?: string   // Время окончания работы зала (HH:MM:SS)
 }
 
 export interface Group {
@@ -11,14 +12,26 @@ export interface Group {
   coach: number
   gym: number
   coach_name?: string
+  gym_name?: string
+  gym_address?: string
+  gym_work_start?: string
+  gym_work_end?: string
+  student_count?: number
 }
 
 export interface Training {
   id: number
   group: number
+  group_name?: string
+  coach_name?: string
+  gym_name?: string
+  gym_address?: string
+  gym_work_start?: string
+  gym_work_end?: string
   date: string
   time: string
   topic: string
+  created_at?: string
 }
 
 export interface Homework {

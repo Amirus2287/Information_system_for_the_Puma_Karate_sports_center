@@ -52,7 +52,7 @@ export default function Sidebar() {
                   }`
                 }
               >
-                <item.icon className="w-5 h-5" />
+                <item.icon className="w-4 h-4" />
                 <span className="text-sm">{item.label}</span>
               </NavLink>
             </li>

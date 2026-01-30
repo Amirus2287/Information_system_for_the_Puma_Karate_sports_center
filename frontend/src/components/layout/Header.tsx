@@ -33,7 +33,7 @@ export default function Header() {
             
             <div className="flex items-center space-x-3 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
               <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center shadow-md">
-                <User className="w-5 h-5 text-white" />
+                <User className="w-4 h-4 text-white" />
               </div>
               <div className="hidden lg:block">
                 <p className="font-semibold text-gray-900 text-sm">
@@ -50,7 +50,7 @@ export default function Header() {
               className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors group"
               title="Настройки"
             >
-              <Settings className="w-5 h-5 text-gray-700 group-hover:text-primary-600 transition-colors" />
+              <Settings className="w-4 h-4 text-gray-700 group-hover:text-primary-600 transition-colors" />
             </button>
             
             <button 

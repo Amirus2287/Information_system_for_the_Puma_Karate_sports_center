@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { competitionsApi } from '../api/competitions'
 import { useAuth } from '../hooks/useAuth'
@@ -70,7 +71,7 @@ export default function Competitions() {
         
         {isCoach && (
           <Button 
-            leftIcon={<Plus className="w-5 h-5" />}
+            leftIcon={<Plus className="w-4 h-4" />}
             onClick={() => setShowForm(true)}
           >
             Новое соревнование
@@ -91,19 +92,29 @@ export default function Competitions() {
           competitions.map((competition: any) => (
             <div
               key={competition.id}
-              className="bg-white border-2 border-gray-100 rounded-2xl p-6 hover:border-primary-200 hover:shadow-elegant-lg transition-all relative"
+              className="bg-white border-2 border-gray-100 rounded-2xl p-6 hover:border-primary-200 hover:shadow-elegant-lg transition-all relative group"
             >
               {isCoach && (
                 <div className="absolute top-4 right-4 z-[1] flex items-center gap-1">
                   <button
-                    onClick={() => handleEdit(competition)}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleEdit(competition)
+                    }}
                     className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
                     title="Редактировать соревнование"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(competition)}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleDelete(competition)
+                    }}
                     className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Удалить соревнование"
                     disabled={deleteMutation.isPending}
@@ -117,47 +128,52 @@ export default function Competitions() {
                 </div>
               )}
               
-              <div className="flex items-center gap-3 mb-4">
-                <div className="bg-gradient-to-br from-primary-500 to-primary-600 p-3 rounded-xl">
-                  <Trophy className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg text-gray-900">{competition.name}</h3>
-                  {competition.is_active ? (
-                    <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                      Активно
-                    </span>
-                  ) : (
-                    <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
-                      Завершено
-                    </span>
-                  )}
-                </div>
-              </div>
-              
-              <div className="space-y-3 mb-4">
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Calendar className="w-4 h-4 text-primary-600" />
-                  <span className="font-medium">
-                    {new Date(competition.date).toLocaleDateString('ru-RU', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </span>
+              <Link
+                to={`/competitions/${competition.id}`}
+                className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 rounded-xl -m-2 p-2"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-gradient-to-br from-primary-500 to-primary-600 p-3 rounded-xl">
+                    <Trophy className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg text-gray-900 group-hover:text-primary-600 transition-colors">{competition.name}</h3>
+                    {competition.is_active ? (
+                      <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                        Активно
+                      </span>
+                    ) : (
+                      <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
+                        Завершено
+                      </span>
+                    )}
+                  </div>
                 </div>
                 
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <MapPin className="w-4 h-4 text-primary-600" />
-                  <span className="font-medium">{competition.location}</span>
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <Calendar className="w-4 h-4 text-primary-600" />
+                    <span className="font-medium">
+                      {new Date(competition.date).toLocaleDateString('ru-RU', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <MapPin className="w-4 h-4 text-primary-600" />
+                    <span className="font-medium">{competition.location}</span>
+                  </div>
                 </div>
-              </div>
-              
-              {competition.description && (
-                <p className="text-sm text-gray-600 line-clamp-2">
-                  {competition.description}
-                </p>
-              )}
+                
+                {competition.description && (
+                  <p className="text-sm text-gray-600 line-clamp-2">
+                    {competition.description}
+                  </p>
+                )}
+              </Link>
             </div>
           ))
         ) : (

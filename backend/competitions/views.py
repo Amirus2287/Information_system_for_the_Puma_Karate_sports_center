@@ -1,7 +1,14 @@
 from rest_framework import viewsets, permissions
-from django.db.models import Q, Count
-from .models import Competition, CompetitionCategory, CompetitionRegistration, CompetitionResult, TeamCompetitionResult
-from .serializers import CompetitionSerializer, CompetitionCategorySerializer, CompetitionRegistrationSerializer, CompetitionResultSerializer, TeamCompetitionResultSerializer
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q, Count, Exists, OuterRef
+from .models import Competition, CompetitionCategory, CompetitionRegistration, CompetitionResult
+from .serializers import CompetitionSerializer, CompetitionCategorySerializer, CompetitionRegistrationSerializer, CompetitionResultSerializer
+
+
+def _user_age(user):
+    from accounts.models import age_from_birth
+    return age_from_birth(user.date_of_birth) if getattr(user, 'date_of_birth', None) else None
+
 
 class CompetitionViewSet(viewsets.ModelViewSet):
     queryset = Competition.objects.all()
@@ -38,6 +45,19 @@ class CompetitionViewSet(viewsets.ModelViewSet):
                 ).distinct()
             else:
                 queryset = queryset.filter(visible_groups_count=0)
+            
+            user_age = _user_age(user)
+            if user_age is not None:
+                has_any_category = CompetitionCategory.objects.filter(competition_id=OuterRef('pk'))
+                age_match = CompetitionCategory.objects.filter(
+                    competition_id=OuterRef('pk')
+                ).filter(
+                    Q(age_min__isnull=True, age_max__isnull=True)
+                    | Q(age_min__lte=user_age, age_max__gte=user_age)
+                )
+                queryset = queryset.filter(
+                    ~Exists(has_any_category) | Exists(age_match)
+                )
         
         return queryset
     
@@ -46,6 +66,14 @@ class CompetitionCategoryViewSet(viewsets.ModelViewSet):
     queryset = CompetitionCategory.objects.all()
     serializer_class = CompetitionCategorySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['competition']
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            from accounts.permissions import IsCoachOrAdmin
+            return [IsCoachOrAdmin()]
+        return [permissions.IsAuthenticatedOrReadOnly()]
 
 class CompetitionRegistrationViewSet(viewsets.ModelViewSet):
     queryset = CompetitionRegistration.objects.all()
@@ -55,9 +83,4 @@ class CompetitionRegistrationViewSet(viewsets.ModelViewSet):
 class CompetitionResultViewSet(viewsets.ModelViewSet):
     queryset = CompetitionResult.objects.all()
     serializer_class = CompetitionResultSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-class TeamCompetitionResultViewSet(viewsets.ModelViewSet):
-    queryset = TeamCompetitionResult.objects.all()
-    serializer_class = TeamCompetitionResultSerializer
     permission_classes = [permissions.IsAuthenticated]

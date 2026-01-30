@@ -58,19 +58,3 @@ class CompetitionResult(models.Model):
     
     def __str__(self):
         return f"{self.registration.user}: {self.place} место"
-
-class TeamCompetitionResult(models.Model):
-    competition = models.ForeignKey(Competition, on_delete=models.CASCADE, related_name='team_results')
-    team_name = models.CharField(max_length=255)
-    score = models.DecimalField(max_digits=5, decimal_places=2)
-    place = models.IntegerField()
-    notes = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        verbose_name = 'Командный результат'
-        verbose_name_plural = 'Командные результаты'
-        ordering = ['place']
-    
-    def __str__(self):
-        return f"{self.team_name} - {self.competition.name} ({self.place} место)"

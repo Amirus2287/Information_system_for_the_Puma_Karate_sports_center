@@ -11,7 +11,7 @@ import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
 import Button from '../ui/Button'
 import toast from 'react-hot-toast'
-import { Users } from 'lucide-react'
+import { Users, Plus, Trash2 } from 'lucide-react'
 
 const competitionSchema = z.object({
   name: z.string().min(1, 'Введите название'),
@@ -30,10 +30,18 @@ interface CompetitionFormProps {
   competition?: any
 }
 
+interface CategoryDraft {
+  id?: number
+  name: string
+  age_min?: number
+  age_max?: number
+}
+
 export default function CompetitionForm({ open, onClose, competition }: CompetitionFormProps) {
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const [selectedGroups, setSelectedGroups] = useState<number[]>([])
+  const [categories, setCategories] = useState<CategoryDraft[]>([])
   const isEditMode = !!competition
   
   const { data: competitionData } = useQuery({
@@ -46,6 +54,12 @@ export default function CompetitionForm({ open, onClose, competition }: Competit
     queryKey: ['groups'],
     queryFn: () => trainingsApi.getGroups(),
     enabled: open,
+  })
+  
+  const { data: existingCategories } = useQuery({
+    queryKey: ['competition-categories', competition?.id],
+    queryFn: () => competitionsApi.getCategories(competition!.id),
+    enabled: isEditMode && !!competition?.id && open,
   })
   
   const groups = user?.is_staff 
@@ -86,18 +100,35 @@ export default function CompetitionForm({ open, onClose, competition }: Competit
         visible_groups: [],
       })
       setSelectedGroups([])
+      setCategories([])
     }
   }, [competitionData, competition, open, setValue, reset])
   
+  useEffect(() => {
+    if (existingCategories && open && isEditMode) {
+      setCategories(existingCategories.map((c: any) => ({
+        id: c.id,
+        name: c.name || '',
+        age_min: c.age_min ?? undefined,
+        age_max: c.age_max ?? undefined,
+      })))
+    }
+  }, [existingCategories, open, isEditMode])
+  
   const createMutation = useMutation({
-    mutationFn: (data: CompetitionFormData) => {
-      const submitData: any = {
-        ...data,
+    mutationFn: async (data: CompetitionFormData) => {
+      const submitData: any = { ...data }
+      if (selectedGroups.length > 0) submitData.visible_groups = selectedGroups
+      const created = await competitionsApi.createCompetition(submitData)
+      for (const cat of categories.filter(c => c.name.trim())) {
+        await competitionsApi.createCategory({
+          competition: created.id,
+          name: cat.name.trim(),
+          age_min: cat.age_min ?? undefined,
+          age_max: cat.age_max ?? undefined,
+        })
       }
-      if (selectedGroups.length > 0) {
-        submitData.visible_groups = selectedGroups
-      }
-      return competitionsApi.createCompetition(submitData)
+      return created
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['competitions'] })
@@ -105,6 +136,7 @@ export default function CompetitionForm({ open, onClose, competition }: Competit
       onClose()
       reset()
       setSelectedGroups([])
+      setCategories([])
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Ошибка при создании соревнования')
@@ -112,24 +144,41 @@ export default function CompetitionForm({ open, onClose, competition }: Competit
   })
   
   const updateMutation = useMutation({
-    mutationFn: (data: CompetitionFormData) => {
-      const submitData: any = {
-        ...data,
+    mutationFn: async (data: CompetitionFormData) => {
+      const submitData: any = { ...data }
+      submitData.visible_groups = selectedGroups.length > 0 ? selectedGroups : []
+      await competitionsApi.updateCompetition(competition!.id, submitData)
+      const existingIds = new Set((existingCategories || []).map((c: any) => c.id))
+      const currentIds = new Set(categories.filter(c => c.id).map(c => c.id))
+      for (const id of existingIds) {
+        if (!currentIds.has(id)) await competitionsApi.deleteCategory(id!)
       }
-      if (selectedGroups.length > 0) {
-        submitData.visible_groups = selectedGroups
-      } else {
-        submitData.visible_groups = []
+      for (const cat of categories.filter(c => c.name.trim())) {
+        if (cat.id) {
+          await competitionsApi.updateCategory(cat.id, {
+            name: cat.name.trim(),
+            age_min: cat.age_min ?? null,
+            age_max: cat.age_max ?? null,
+          })
+        } else {
+          await competitionsApi.createCategory({
+            competition: competition!.id,
+            name: cat.name.trim(),
+            age_min: cat.age_min ?? undefined,
+            age_max: cat.age_max ?? undefined,
+          })
+        }
       }
-      return competitionsApi.updateCompetition(competition!.id, submitData)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['competitions'] })
       queryClient.invalidateQueries({ queryKey: ['competition', competition!.id] })
+      queryClient.invalidateQueries({ queryKey: ['competition-categories', competition!.id] })
       toast.success('Соревнование успешно обновлено')
       onClose()
       reset()
       setSelectedGroups([])
+      setCategories([])
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Ошибка при обновлении соревнования')
@@ -153,7 +202,22 @@ export default function CompetitionForm({ open, onClose, competition }: Competit
   const handleClose = () => {
     reset()
     setSelectedGroups([])
+    setCategories([])
     onClose()
+  }
+  
+  const addCategory = () => {
+    setCategories(prev => [...prev, { name: '', age_min: undefined, age_max: undefined }])
+  }
+  const updateCategory = (index: number, field: keyof CategoryDraft, value: string | number | undefined) => {
+    setCategories(prev => {
+      const next = [...prev]
+      next[index] = { ...next[index], [field]: value === '' ? undefined : value }
+      return next
+    })
+  }
+  const removeCategory = (index: number) => {
+    setCategories(prev => prev.filter((_, i) => i !== index))
   }
   
   return (
@@ -201,6 +265,53 @@ export default function CompetitionForm({ open, onClose, competition }: Competit
           <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">
             Соревнование активно
           </label>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Возрастные категории (для фильтрации соревнований по возрасту участников)
+          </label>
+          <div className="space-y-2 mb-2">
+            {categories.map((cat, index) => (
+              <div key={cat.id ?? index} className="flex flex-wrap items-center gap-2 p-2 border border-gray-200 rounded-lg">
+                <input
+                  type="text"
+                  placeholder="Название категории"
+                  value={cat.name}
+                  onChange={e => updateCategory(index, 'name', e.target.value)}
+                  className="flex-1 min-w-[120px] px-3 py-1.5 border border-gray-200 rounded text-sm"
+                />
+                <input
+                  type="number"
+                  placeholder="Возраст от"
+                  min={0}
+                  value={cat.age_min ?? ''}
+                  onChange={e => updateCategory(index, 'age_min', e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                  className="w-20 px-2 py-1.5 border border-gray-200 rounded text-sm"
+                />
+                <span className="text-gray-500">—</span>
+                <input
+                  type="number"
+                  placeholder="до"
+                  min={0}
+                  value={cat.age_max ?? ''}
+                  onChange={e => updateCategory(index, 'age_max', e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                  className="w-20 px-2 py-1.5 border border-gray-200 rounded text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeCategory(index)}
+                  className="p-1.5 text-gray-400 hover:text-red-600 rounded"
+                  title="Удалить категорию"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+          <Button type="button" variant="outline" size="sm" leftIcon={<Plus className="w-4 h-4" />} onClick={addCategory}>
+            Добавить возрастную категорию
+          </Button>
         </div>
         
         <div>

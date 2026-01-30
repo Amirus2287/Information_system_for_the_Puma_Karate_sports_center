@@ -40,19 +40,19 @@ export default function JournalCard({ journal }: JournalCardProps) {
       
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div className="text-center p-2 bg-blue-50 rounded">
-          <Target className="w-5 h-5 mx-auto mb-1 text-blue-600" />
+          <Target className="w-4 h-4 mx-auto mb-1 text-blue-600" />
           <div className="font-semibold">{journal.technique_score || '-'}</div>
           <div className="text-xs text-gray-600">Техника</div>
         </div>
         
         <div className="text-center p-2 bg-green-50 rounded">
-          <Award className="w-5 h-5 mx-auto mb-1 text-green-600" />
+          <Award className="w-4 h-4 mx-auto mb-1 text-green-600" />
           <div className="font-semibold">{journal.kata_score || '-'}</div>
           <div className="text-xs text-gray-600">Ката</div>
         </div>
         
         <div className="text-center p-2 bg-purple-50 rounded">
-          <Award className="w-5 h-5 mx-auto mb-1 text-purple-600" />
+          <Award className="w-4 h-4 mx-auto mb-1 text-purple-600" />
           <div className="font-semibold">{journal.kumite_score || '-'}</div>
           <div className="text-xs text-gray-600">Кумите</div>
         </div>

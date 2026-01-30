@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth'
 import Button from '../../components/ui/Button'
 import AchievementForm from '../../components/achievements/AchievementForm'
 import { Plus, Edit, Trash2, UserCog, Search, Award } from 'lucide-react'
+import StudentInfoDialog from '../../components/profile/StudentInfoDialog'
 import toast from 'react-hot-toast'
 
 export default function UsersManagement() {
@@ -15,6 +16,7 @@ export default function UsersManagement() {
   const [showForm, setShowForm] = useState(false)
   const [showAchievementForm, setShowAchievementForm] = useState(false)
   const [selectedStudentForAchievement, setSelectedStudentForAchievement] = useState<number | undefined>(undefined)
+  const [selectedStudentForView, setSelectedStudentForView] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   
   const { data: users, isLoading } = useQuery({
@@ -64,7 +66,7 @@ export default function UsersManagement() {
       
       <div className="bg-white border-2 border-gray-100 rounded-xl p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             placeholder="Поиск пользователей..."
@@ -93,7 +95,17 @@ export default function UsersManagement() {
                   <tr key={user.id} className="border-b border-gray-100 hover:bg-red-50 transition-colors">
                     <td className="py-3 px-4">
                       <div className="font-medium text-gray-900">
-                        {user.first_name} {user.last_name}
+                        {isCoach && (user.is_student || user.is_coach) ? (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedStudentForView(user.id)}
+                            className="text-left text-primary-600 hover:text-primary-700 hover:underline focus:outline-none focus:underline"
+                          >
+                            {user.first_name} {user.last_name}
+                          </button>
+                        ) : (
+                          <span>{user.first_name} {user.last_name}</span>
+                        )}
                       </div>
                       <div className="text-sm text-gray-500">{user.username}</div>
                     </td>
@@ -129,7 +141,7 @@ export default function UsersManagement() {
                       )}
                     </td>
                     <td className="py-3 px-4">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-2 flex-wrap">
                         {isCoach && user.is_student && (
                           <Button
                             size="sm"
@@ -195,6 +207,12 @@ export default function UsersManagement() {
           studentId={selectedStudentForAchievement}
         />
       )}
+      
+      <StudentInfoDialog
+        open={selectedStudentForView != null}
+        onClose={() => setSelectedStudentForView(null)}
+        userId={selectedStudentForView}
+      />
     </div>
   )
 }

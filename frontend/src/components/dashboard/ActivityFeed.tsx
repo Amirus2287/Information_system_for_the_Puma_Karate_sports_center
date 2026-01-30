@@ -17,11 +17,11 @@ export default function ActivityFeed() {
   
   const getIcon = (type: string) => {
     switch (type) {
-      case 'achievement': return <Award className="w-5 h-5 text-yellow-600" />
-      case 'training': return <Target className="w-5 h-5 text-blue-600" />
-      case 'competition': return <Calendar className="w-5 h-5 text-green-600" />
-      case 'journal': return <BookOpen className="w-5 h-5 text-purple-600" />
-      default: return <Award className="w-5 h-5" />
+      case 'achievement': return <Award className="w-4 h-4 text-yellow-600" />
+      case 'training': return <Target className="w-4 h-4 text-blue-600" />
+      case 'competition': return <Calendar className="w-4 h-4 text-green-600" />
+      case 'journal': return <BookOpen className="w-4 h-4 text-purple-600" />
+      default: return <Award className="w-4 h-4" />
     }
   }
   

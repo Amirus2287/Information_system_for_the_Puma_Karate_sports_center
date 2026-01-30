@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Profile, Achievement, News, ClubTeam
+from .models import User, Profile, Achievement, News
 
 
 class ProfileInline(admin.StackedInline):
@@ -79,18 +79,6 @@ class NewsAdmin(admin.ModelAdmin):
     search_fields = ('title', 'content', 'author__username')
     raw_id_fields = ('author',)
     date_hierarchy = 'created_at'
-
-
-@admin.register(ClubTeam)
-class ClubTeamAdmin(admin.ModelAdmin):
-    list_display = ('name', 'coach', 'student_count_display')
-    list_filter = ('coach',)
-    search_fields = ('name', 'coach__username', 'coach__first_name', 'coach__last_name')
-    filter_horizontal = ('students',)
-    
-    def student_count_display(self, obj):
-        return obj.students.count()
-    student_count_display.short_description = 'Количество учеников'
 
 
 admin.site.register(User, UserAdmin)

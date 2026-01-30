@@ -9,7 +9,7 @@ import Dialog from '../ui/Dialog'
 import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
 import Button from '../ui/Button'
-import { User, Mail, Phone, MapPin, Award, Calendar, Users, Heart } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Award, Calendar, Users, Heart, CreditCard } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const profileSchema = z.object({
@@ -17,6 +17,7 @@ const profileSchema = z.object({
   last_name: z.string().min(1, 'Введите фамилию'),
   email: z.string().email('Введите корректный email'),
   phone: z.string().optional(),
+  date_of_birth: z.string().optional(),
   bio: z.string().optional(),
   location: z.string().optional(),
   grade: z.string().optional(),
@@ -24,6 +25,10 @@ const profileSchema = z.object({
   parent_name: z.string().optional(),
   parent_phone: z.string().optional(),
   medical_notes: z.string().optional(),
+  passport_series: z.string().optional(),
+  passport_number: z.string().optional(),
+  passport_issued_by: z.string().optional(),
+  snils: z.string().optional(),
 })
 
 type ProfileFormData = z.infer<typeof profileSchema>
@@ -57,6 +62,7 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
       last_name: '',
       email: '',
       phone: '',
+      date_of_birth: '',
       bio: '',
       location: '',
       grade: '',
@@ -64,6 +70,10 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
       parent_name: '',
       parent_phone: '',
       medical_notes: '',
+      passport_series: '',
+      passport_number: '',
+      passport_issued_by: '',
+      snils: '',
     },
   })
   
@@ -73,6 +83,8 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
       setValue('last_name', user.last_name || '')
       setValue('email', user.email || '')
       setValue('phone', user.phone || '')
+      const dob = user.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : ''
+      setValue('date_of_birth', dob)
     }
   }, [user, open, setValue])
   
@@ -85,6 +97,10 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
       setValue('parent_name', profile.parent_name || '')
       setValue('parent_phone', profile.parent_phone || '')
       setValue('medical_notes', profile.medical_notes || '')
+      setValue('passport_series', profile.passport_series || '')
+      setValue('passport_number', profile.passport_number || '')
+      setValue('passport_issued_by', profile.passport_issued_by || '')
+      setValue('snils', profile.snils || '')
     }
   }, [profile, open, setValue])
   
@@ -95,6 +111,7 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
         last_name: data.last_name,
         email: data.email,
         phone: data.phone,
+        date_of_birth: data.date_of_birth || null,
       })
     },
   })
@@ -109,6 +126,10 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
         parent_name: data.parent_name || '',
         parent_phone: data.parent_phone || '',
         medical_notes: data.medical_notes || '',
+        passport_series: data.passport_series || '',
+        passport_number: data.passport_number || '',
+        passport_issued_by: data.passport_issued_by || '',
+        snils: data.snils || '',
       }
       
       if (profile?.id) {
@@ -165,7 +186,7 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
           <div className="bg-gradient-to-r from-primary-50 to-red-50 rounded-xl p-4 border-2 border-primary-100">
             <div className="flex items-center gap-2 mb-4">
               <div className="bg-primary-600 p-2 rounded-lg">
-                <User className="w-5 h-5 text-white" />
+                <User className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-lg font-bold text-gray-900">Основная информация</h3>
             </div>
@@ -183,12 +204,58 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
                 error={errors.last_name?.message}
               />
             </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Дата рождения"
+                type="date"
+                {...register('date_of_birth')}
+                error={errors.date_of_birth?.message}
+              />
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border-2 border-amber-100">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="bg-amber-600 p-2 rounded-lg">
+                <CreditCard className="w-4 h-4 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Паспортные данные и СНИЛС</h3>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="Серия паспорта"
+                  {...register('passport_series')}
+                  error={errors.passport_series?.message}
+                  placeholder="0000"
+                />
+                <Input
+                  label="Номер паспорта"
+                  {...register('passport_number')}
+                  error={errors.passport_number?.message}
+                  placeholder="000000"
+                />
+              </div>
+              <Input
+                label="Кем выдан паспорт"
+                {...register('passport_issued_by')}
+                error={errors.passport_issued_by?.message}
+              />
+              <Input
+                label="СНИЛС"
+                {...register('snils')}
+                error={errors.snils?.message}
+                placeholder="000-000-000 00"
+              />
+            </div>
           </div>
           
           <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 border-2 border-blue-100">
             <div className="flex items-center gap-2 mb-4">
               <div className="bg-blue-600 p-2 rounded-lg">
-                <Mail className="w-5 h-5 text-white" />
+                <Mail className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-lg font-bold text-gray-900">Контактная информация</h3>
             </div>
@@ -214,7 +281,7 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border-2 border-green-100">
             <div className="flex items-center gap-2 mb-4">
               <div className="bg-green-600 p-2 rounded-lg">
-                <Award className="w-5 h-5 text-white" />
+                <Award className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-lg font-bold text-gray-900">Спортивная информация</h3>
             </div>
@@ -253,7 +320,7 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border-2 border-purple-100">
             <div className="flex items-center gap-2 mb-4">
               <div className="bg-purple-600 p-2 rounded-lg">
-                <Users className="w-5 h-5 text-white" />
+                <Users className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-lg font-bold text-gray-900">Контактная информация родителей</h3>
             </div>
@@ -276,7 +343,7 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
           <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 border-2 border-red-100">
             <div className="flex items-center gap-2 mb-4">
               <div className="bg-red-600 p-2 rounded-lg">
-                <Heart className="w-5 h-5 text-white" />
+                <Heart className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-lg font-bold text-gray-900">Медицинские показания</h3>
             </div>

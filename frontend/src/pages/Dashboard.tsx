@@ -143,15 +143,15 @@ export default function Dashboard() {
         </div>
         <div className="relative flex justify-between items-center">
           <div>
-            <h1 className="text-4xl font-bold mb-2 tracking-tight">
-              Добро пожаловать, {user?.first_name}!
+            <h1 className="text-4xl font-bold mb-2 tracking-tight text-white">
+              Добро пожаловать {user?.first_name}!
             </h1>
             <p className="text-lg text-red-100 font-medium">
               {getRoleText()}
             </p>
           </div>
           <div className="hidden md:flex items-center space-x-3 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-xl border border-white/30">
-            <Clock className="w-5 h-5" />
+            <Clock className="w-4 h-4" />
             <span className="font-semibold">
               {new Date().toLocaleDateString('ru-RU', { 
                 weekday: 'long', 
@@ -177,7 +177,7 @@ export default function Dashboard() {
               className="group p-6 border-2 border-gray-200 rounded-xl hover:border-primary-300 hover:bg-red-50 text-left transition-all duration-200 hover:shadow-md"
             >
               <div className={`bg-gradient-to-br ${action.gradient} p-3 rounded-lg w-fit mb-4 group-hover:scale-110 transition-transform`}>
-                <action.icon className="w-6 h-6 text-white" />
+                <action.icon className="w-4 h-4 text-white" />
               </div>
               <h3 className="font-bold text-gray-900 mb-2 text-lg">{action.title}</h3>
               <p className="text-sm text-gray-600">{action.description}</p>
@@ -206,7 +206,7 @@ export default function Dashboard() {
                 className="p-5 border-2 border-gray-100 rounded-xl hover:border-primary-200 hover:bg-red-50 transition-all"
               >
                 <div className="flex items-start gap-3 mb-2">
-                  <Newspaper className="w-5 h-5 text-primary-600 flex-shrink-0 mt-1" />
+                  <Newspaper className="w-4 h-4 text-primary-600 flex-shrink-0 mt-1" />
                   <div className="flex-1">
                     <h3 className="font-bold text-lg text-gray-900 mb-2">{item.title}</h3>
                     <div 

@@ -1,0 +1,12 @@
+# Production dependencies (Python 3.11)
+# Generated for Docker / Dokploy deploy. For local dev use: uv sync
+Django>=4.2,<5
+djangorestframework>=3.14
+django-cors-headers>=4.0
+psycopg2-binary>=2.9
+django-filter>=24.3
+drf-yasg>=1.21
+channels>=4.0
+gunicorn>=21.0
+whitenoise>=6.6
+Pillow>=10.0

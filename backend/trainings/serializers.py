@@ -10,11 +10,14 @@ class GroupSerializer(serializers.ModelSerializer):
     coach_name = serializers.CharField(source='coach.get_full_name', read_only=True)
     gym_name = serializers.CharField(source='gym.name', read_only=True)
     gym_address = serializers.CharField(source='gym.address', read_only=True)
+    gym_work_start = serializers.TimeField(source='gym.work_start', read_only=True)
+    gym_work_end = serializers.TimeField(source='gym.work_end', read_only=True)
     student_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Group
-        fields = ['id', 'name', 'coach', 'coach_name', 'gym', 'gym_name', 'gym_address', 'student_count']
+        fields = ['id', 'name', 'coach', 'coach_name', 'gym', 'gym_name', 'gym_address', 
+                 'gym_work_start', 'gym_work_end', 'student_count']
     
     def get_student_count(self, obj):
         return obj.students.filter(is_active=True).count()
@@ -24,11 +27,13 @@ class TrainingSerializer(serializers.ModelSerializer):
     coach_name = serializers.CharField(source='group.coach.get_full_name', read_only=True)
     gym_name = serializers.CharField(source='group.gym.name', read_only=True)
     gym_address = serializers.CharField(source='group.gym.address', read_only=True)
+    gym_work_start = serializers.TimeField(source='group.gym.work_start', read_only=True)
+    gym_work_end = serializers.TimeField(source='group.gym.work_end', read_only=True)
     
     class Meta:
         model = Training
-        fields = ['id', 'group', 'group_name', 'coach_name', 'gym_name', 'gym_address', 
-                 'date', 'time', 'topic', 'created_at']
+        fields = ['id', 'group', 'group_name', 'coach_name', 'gym_name', 'gym_address',
+                 'gym_work_start', 'gym_work_end', 'date', 'time', 'topic', 'created_at']
         read_only_fields = ['created_at']
 
 class HomeworkSerializer(serializers.ModelSerializer):

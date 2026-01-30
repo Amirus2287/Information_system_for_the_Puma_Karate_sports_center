@@ -7,6 +7,7 @@ import TrainingForm from '../components/trainings/TrainingForm'
 import AttendanceModal from '../components/trainings/AttendanceModal'
 import { Plus, Calendar, Clock, Users, MapPin, User, Filter, X, CheckCircle, XCircle, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { formatWorkingHours } from '../utils/formatters'
 
 export default function Trainings() {
   const { user } = useAuth()
@@ -64,7 +65,7 @@ export default function Trainings() {
         {isCoach && (
           <Button 
             onClick={() => setShowTrainingForm(true)} 
-            leftIcon={<Plus className="w-5 h-5" />}
+            leftIcon={<Plus className="w-4 h-4" />}
           >
             Новая тренировка
           </Button>
@@ -75,14 +76,14 @@ export default function Trainings() {
           <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <Calendar className="w-6 h-6 text-primary-600" />
+                <Calendar className="w-5 h-5 text-primary-600" />
                 <h2 className="text-xl font-bold text-gray-900">Расписание тренировок</h2>
               </div>
             </div>
             
             <div className="mb-6 p-4 bg-red-50 border-2 border-primary-100 rounded-xl">
               <div className="flex items-center gap-2 mb-3">
-                <Filter className="w-5 h-5 text-primary-600" />
+                <Filter className="w-4 h-4 text-primary-600" />
                 <h3 className="font-semibold text-gray-900">Фильтры</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -302,6 +303,11 @@ function TrainingCard({ training, isCoach }: { training: any; isCoach: boolean }
                   {training.gym_address && (
                     <span className="text-xs text-gray-500">{training.gym_address}</span>
                   )}
+                  {training.gym_work_start && (
+                    <span className="text-xs text-gray-500 block">
+                      Зал работает: {formatWorkingHours(training.gym_work_start, training.gym_work_end)}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -335,11 +341,11 @@ function TrainingCard({ training, isCoach }: { training: any; isCoach: boolean }
                       <div className="flex items-center gap-3 flex-1">
                         <div className="flex-shrink-0">
                           {isPresent === true ? (
-                            <CheckCircle className="w-5 h-5 text-green-600" />
+                            <CheckCircle className="w-4 h-4 text-green-600" />
                           ) : isPresent === false ? (
-                            <XCircle className="w-5 h-5 text-red-600" />
+                            <XCircle className="w-4 h-4 text-red-600" />
                           ) : (
-                            <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
+                            <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
                           )}
                         </div>
                         <div className="flex-1">

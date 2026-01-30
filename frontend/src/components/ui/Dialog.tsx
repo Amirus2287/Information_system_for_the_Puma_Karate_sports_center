@@ -23,10 +23,10 @@ export default function Dialog({
         <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-50" />
         <DialogPrimitive.Content className={cn(
           "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-          "w-full max-w-md bg-white rounded-lg shadow-lg p-6 z-50 max-h-[90vh] overflow-hidden flex flex-col",
+          "w-full max-w-md bg-white rounded-lg shadow-lg p-6 z-50 max-h-[90vh] flex flex-col overflow-hidden",
           className
         )}>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex-shrink-0 flex justify-between items-center mb-4">
             <DialogPrimitive.Title className="text-lg font-semibold">
               {title}
             </DialogPrimitive.Title>
@@ -34,7 +34,9 @@ export default function Dialog({
               <X className="w-4 h-4" />
             </DialogPrimitive.Close>
           </div>
-          {children}
+          <div className="min-h-0 flex-1 overflow-y-auto -mx-1 px-1">
+            {children}
+          </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

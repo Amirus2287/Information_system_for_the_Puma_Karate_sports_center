@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { usersApi } from '../../api/users'
 import Button from '../../components/ui/Button'
-import { Plus, Edit, Trash2, Newspaper } from 'lucide-react'
+import Dialog from '../../components/ui/Dialog'
+import { Plus, Edit, Trash2, Newspaper, Link as LinkIcon, Type } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ReactQuill, { Quill } from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
@@ -94,14 +95,32 @@ export default function NewsManagement() {
   
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Управление новостями</h1>
-          <p className="text-gray-600 mt-1">Создание и редактирование новостей спортивного центра</p>
+      <div className="relative bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 rounded-2xl p-6 text-white shadow-elegant overflow-hidden">
+        <div className="absolute inset-0 opacity-20">
+          <div className="w-full h-full bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.1%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')]"></div>
         </div>
-        <Button onClick={() => { setEditingNews(null); setShowForm(true) }} leftIcon={<Plus />}>
-          Создать новость
-        </Button>
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+              <Newspaper className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
+                Новости
+              </h1>
+              <p className="text-primary-100 mt-0.5 text-sm md:text-base">
+                Создание и редактирование новостей спортивного центра
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={() => { setEditingNews(null); setShowForm(true) }}
+            leftIcon={<Plus className="w-4 h-4" />}
+            className="bg-white text-primary-600 hover:bg-primary-50 border-0 shadow-md"
+          >
+            Создать новость
+          </Button>
+        </div>
       </div>
       
       <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
@@ -115,7 +134,7 @@ export default function NewsManagement() {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <Newspaper className="w-5 h-5 text-primary-600" />
+                      <Newspaper className="w-4 h-4 text-primary-600" />
                       <h3 className="font-bold text-lg text-gray-900">{item.title}</h3>
                     </div>
                     <div 
@@ -182,9 +201,14 @@ function NewsForm({ news, onClose }: { news: any; onClose: () => void }) {
   const queryClient = useQueryClient()
   const [title, setTitle] = useState(news?.title || '')
   const [content, setContent] = useState(news?.content || '')
+  const [showLinkDialog, setShowLinkDialog] = useState(false)
+  const [linkUrl, setLinkUrl] = useState('')
   const quillRef = useRef<any>(null)
+  const formContainerRef = useRef<HTMLDivElement>(null)
+  const allowQuillFocusRef = useRef(false)
+  const savedRangeRef = useRef<{ index: number; length: number } | null>(null)
   
-  const modules = {
+  const modules = useMemo(() => ({
     toolbar: [
       [{ font: FONT_VALUES }],
       [{ size: [...SIZE_VALUES] }],
@@ -199,6 +223,45 @@ function NewsForm({ news, onClose }: { news: any; onClose: () => void }) {
     clipboard: {
       matchVisual: false
     }
+  }), [])
+  
+  const openLinkDialog = () => {
+    const quill = quillRef.current?.getEditor?.()
+    if (!quill) return
+    if (savedRangeRef.current == null) {
+      const range = quill.getSelection(true)
+      if (range) {
+        savedRangeRef.current = { index: range.index, length: range.length }
+      } else {
+        const length = quill.getLength()
+        savedRangeRef.current = { index: Math.max(0, length - 1), length: 0 }
+      }
+    }
+    setLinkUrl('https://')
+    setShowLinkDialog(true)
+  }
+  
+  const applyLink = () => {
+    const quill = quillRef.current?.getEditor?.()
+    const range = savedRangeRef.current
+    if (!quill || !range || !linkUrl.trim()) {
+      setShowLinkDialog(false)
+      return
+    }
+    const href = /^https?:\/\//i.test(linkUrl.trim()) ? linkUrl.trim() : 'https://' + linkUrl.trim()
+    allowQuillFocusRef.current = true
+    quill.focus()
+    if (range.length > 0) {
+      quill.setSelection(range.index, range.length)
+      quill.format('link', href)
+    } else {
+      quill.insertText(range.index, href)
+      quill.formatText(range.index, href.length, 'link', href, 'user')
+      quill.setSelection(range.index + href.length, 0)
+    }
+    savedRangeRef.current = null
+    setLinkUrl('')
+    setShowLinkDialog(false)
   }
   
   const formats = [
@@ -208,7 +271,7 @@ function NewsForm({ news, onClose }: { news: any; onClose: () => void }) {
     'color', 'background',
     'align',
     'list', 'bullet', 'indent',
-    'image'
+    'link', 'image'
   ]
   
   const mutation = useMutation({
@@ -233,11 +296,56 @@ function NewsForm({ news, onClose }: { news: any; onClose: () => void }) {
       toast.error(errorMessage)
     },
   })
+
+  useEffect(() => {
+    let removeListeners: (() => void) | undefined
+    const id = setTimeout(() => {
+      if (!formContainerRef.current || !quillRef.current) return
+      const quill = quillRef.current.getEditor()
+      const root = quill.root as HTMLElement
+      const container = formContainerRef.current
+      const titleInputId = 'news-title'
+
+      const onMouseDown = (e: MouseEvent) => {
+        allowQuillFocusRef.current = root.contains(e.target as Node)
+      }
+      const onFocusIn = (e: FocusEvent) => {
+        if (e.target !== root) return
+        if (!allowQuillFocusRef.current) {
+          root.blur()
+          const prev = e.relatedTarget as HTMLElement | null
+          const toFocus = prev && typeof prev.focus === 'function' && prev !== document.body
+            ? prev
+            : document.getElementById(titleInputId) as HTMLInputElement | null
+          if (toFocus?.focus) {
+            toFocus.focus()
+          }
+        }
+      }
+      container.addEventListener('mousedown', onMouseDown, true)
+      container.addEventListener('focusin', onFocusIn, true)
+      removeListeners = () => {
+        container.removeEventListener('mousedown', onMouseDown, true)
+        container.removeEventListener('focusin', onFocusIn, true)
+      }
+    }, 150)
+    return () => {
+      clearTimeout(id)
+      removeListeners?.()
+    }
+  }, [])
   
   useEffect(() => {
-    if (quillRef.current) {
-      const quill = quillRef.current.getEditor()
-      const toolbar = quill.getModule('toolbar')
+    if (!quillRef.current) return
+    const quill = quillRef.current.getEditor()
+    const toolbar = quill.getModule('toolbar')
+    
+      const saveSelection = (range: { index: number; length: number } | null) => {
+        if (range) {
+          savedRangeRef.current = { index: range.index, length: range.length }
+        }
+      }
+      quill.on('selection-change', saveSelection)
       
       const updatePickerLabels = () => {
         const fontPicker = toolbar.container.querySelector('.ql-font')
@@ -323,11 +431,11 @@ function NewsForm({ news, onClose }: { news: any; onClose: () => void }) {
       quill.on('text-change', updatePickerLabels)
       quill.on('editor-change', updatePickerLabels)
       
-      return () => {
-        quill.off('selection-change', updatePickerLabels)
-        quill.off('text-change', updatePickerLabels)
-        quill.off('editor-change', updatePickerLabels)
-      }
+    return () => {
+      quill.off('selection-change', saveSelection)
+      quill.off('selection-change', updatePickerLabels)
+      quill.off('text-change', updatePickerLabels)
+      quill.off('editor-change', updatePickerLabels)
     }
   }, [])
   
@@ -346,27 +454,74 @@ function NewsForm({ news, onClose }: { news: any; onClose: () => void }) {
   
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div ref={formContainerRef} className="bg-white rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           {news ? 'Редактировать новость' : 'Создать новость'}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="relative z-10">
+            <label
+              htmlFor="news-title"
+              className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-2"
+            >
+              <Type className="w-4 h-4 text-primary-600" />
               Заголовок
             </label>
             <input
+              id="news-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+              className="w-full px-4 py-3 text-base border-2 border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-colors placeholder:text-gray-400"
+              placeholder="Название новости"
               required
+              autoComplete="off"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Содержание
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Содержание
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                leftIcon={<LinkIcon className="w-4 h-4" />}
+                onClick={openLinkDialog}
+              >
+                Вставить ссылку
+              </Button>
+            </div>
+            {showLinkDialog && (
+              <Dialog
+                open={true}
+                onOpenChange={(open) => !open && setShowLinkDialog(false)}
+                title="Вставить ссылку"
+              >
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">URL</label>
+                  <input
+                    type="url"
+                    value={linkUrl}
+                    onChange={(e) => setLinkUrl(e.target.value)}
+                    placeholder="https://"
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                    autoFocus
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                    <Button type="button" variant="outline" onClick={() => setShowLinkDialog(false)}>
+                      Отмена
+                    </Button>
+                    <Button type="button" onClick={applyLink} disabled={!linkUrl.trim()}>
+                      Вставить
+                    </Button>
+                  </div>
+                </div>
+              </Dialog>
+            )}
             <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-white">
               <style>{`
                 .ql-container {
@@ -871,13 +1026,9 @@ function NewsForm({ news, onClose }: { news: any; onClose: () => void }) {
                 onChange={setContent}
                 modules={modules}
                 formats={formats}
-                placeholder="Начните вводить текст новости..."
                 style={{ minHeight: '400px' }}
               />
             </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Используйте панель инструментов для форматирования текста, вставки изображений и видео
-            </p>
           </div>
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>

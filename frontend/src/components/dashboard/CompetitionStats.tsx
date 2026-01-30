@@ -20,7 +20,7 @@ export default function CompetitionStats() {
       <div className="space-y-4">
         <div className="flex justify-between items-center p-3 bg-blue-50 rounded">
           <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-blue-600" />
+            <Trophy className="w-4 h-4 text-blue-600" />
             <span>Всего соревнований</span>
           </div>
           <span className="font-semibold">{competitions?.length || 0}</span>
@@ -28,7 +28,7 @@ export default function CompetitionStats() {
         
         <div className="flex justify-between items-center p-3 bg-green-50 rounded">
           <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-green-600" />
+            <Calendar className="w-4 h-4 text-green-600" />
             <span>Предстоящие</span>
           </div>
           <span className="font-semibold">{upcoming}</span>
@@ -36,7 +36,7 @@ export default function CompetitionStats() {
         
         <div className="flex justify-between items-center p-3 bg-yellow-50 rounded">
           <div className="flex items-center gap-2">
-            <Award className="w-5 h-5 text-yellow-600" />
+            <Award className="w-4 h-4 text-yellow-600" />
             <span>Участие</span>
           </div>
           <span className="font-semibold">0</span>

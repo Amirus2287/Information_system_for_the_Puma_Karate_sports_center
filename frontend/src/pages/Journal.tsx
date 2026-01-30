@@ -130,7 +130,7 @@ export default function Journal() {
       
       <div className="bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-elegant">
         <div className="flex items-center justify-between mb-4">
-          <Button variant="outline" onClick={goToPreviousWeek} leftIcon={<ChevronLeft className="w-5 h-5" />}>
+          <Button variant="outline" onClick={goToPreviousWeek} leftIcon={<ChevronLeft className="w-4 h-4" />}>
             Предыдущая неделя
           </Button>
           
@@ -138,7 +138,7 @@ export default function Journal() {
             <h2 className="text-xl font-bold text-gray-900">{formatWeekRange()}</h2>
           </div>
           
-          <Button variant="outline" onClick={goToNextWeek} rightIcon={<ChevronRight className="w-5 h-5" />}>
+          <Button variant="outline" onClick={goToNextWeek} rightIcon={<ChevronRight className="w-4 h-4" />}>
             Следующая неделя
           </Button>
         </div>
@@ -214,7 +214,7 @@ export default function Journal() {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <Calendar className="w-5 h-5 text-primary-600" />
+                      <Calendar className="w-4 h-4 text-primary-600" />
                       <h3 className="font-bold text-lg text-gray-900">
                         {new Date(training.date).toLocaleDateString('ru-RU', {
                           weekday: 'long',

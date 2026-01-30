@@ -2,6 +2,15 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from datetime import date
+
+
+def age_from_birth(birth_date):
+    if not birth_date:
+        return None
+    today = date.today()
+    return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+
 
 class User(AbstractUser):
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -17,6 +26,10 @@ class User(AbstractUser):
     
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+    
+    @property
+    def age(self):
+        return age_from_birth(self.date_of_birth)
     
     def save(self, *args, **kwargs):
         if self.is_staff:
@@ -36,6 +49,11 @@ class Profile(models.Model):
     parent_phone = models.CharField('Телефон родителя', max_length=20, blank=True)
     
     medical_notes = models.TextField('Медицинские показания', blank=True)
+    
+    passport_series = models.CharField('Серия паспорта', max_length=10, blank=True)
+    passport_number = models.CharField('Номер паспорта', max_length=20, blank=True)
+    passport_issued_by = models.CharField('Кем выдан паспорт', max_length=500, blank=True)
+    snils = models.CharField('СНИЛС', max_length=14, blank=True)
     
     competitions_participated = models.IntegerField('Участие в соревнованиях', default=0)
     competitions_won = models.IntegerField('Побед в соревнованиях', default=0)
@@ -100,26 +118,3 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):
         instance.profile.save()
-
-class ClubTeam(models.Model):
-    name = models.CharField('Название команды', max_length=255)
-    coach = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='coached_teams')
-    students = models.ManyToManyField(User, related_name='teams', blank=True)
-    description = models.TextField('Описание команды', blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        verbose_name = 'Команда клуба'
-        verbose_name_plural = 'Команды клуба'
-    
-    def __str__(self):
-        return self.name
-    
-    @property
-    def student_count(self):
-        return self.students.count()
-    
-    @property
-    def active_students(self):
-        return self.students.filter(is_active=True).count()

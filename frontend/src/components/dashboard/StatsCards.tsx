@@ -19,7 +19,7 @@ export default function StatsCards() {
               <p className="text-2xl font-bold mt-2">{stat.value}</p>
             </div>
             <div className={`p-3 rounded-lg ${stat.bg}`}>
-              <stat.icon className={`w-6 h-6 ${stat.color}`} />
+              <stat.icon className={`w-4 h-4 ${stat.color}`} />
             </div>
           </div>
         </Card>

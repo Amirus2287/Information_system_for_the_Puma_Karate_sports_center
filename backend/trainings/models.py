@@ -7,7 +7,9 @@ User = settings.AUTH_USER_MODEL
 class Gym(models.Model):
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
-    work_time = models.CharField(max_length=100)
+    work_start = models.TimeField()
+    work_end = models.TimeField(null=True, blank=True)
+
     
     class Meta:
         verbose_name = 'Зал'

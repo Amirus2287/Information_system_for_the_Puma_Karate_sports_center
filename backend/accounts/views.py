@@ -2,14 +2,15 @@ from rest_framework import viewsets, generics, permissions, status, filters
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.db.models import Q
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.utils.decorators import method_decorator
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import User, Profile, Achievement, News, ClubTeam
+from .models import User, Profile, Achievement, News
 from .permissions import IsAdmin, IsCoachOrAdmin
 from .serializers import (
     UserSerializer, ProfileSerializer, AchievementSerializer, 
-    NewsSerializer, ClubTeamSerializer
+    NewsSerializer
 )
 
 User = get_user_model()
@@ -63,6 +64,14 @@ class ProfileViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_staff:
             return Profile.objects.all()
+        if user.is_coach:
+            from trainings.models import GroupStudent
+            student_ids = list(GroupStudent.objects.filter(
+                group__coach=user,
+                is_active=True
+            ).values_list('student_id', flat=True).distinct())
+            student_ids = list(student_ids) + [user.id]
+            return Profile.objects.filter(user_id__in=student_ids)
         return Profile.objects.filter(user=user)
     
     @action(detail=False, methods=['get'])
@@ -108,12 +117,6 @@ class NewsViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-
-class ClubTeamViewSet(viewsets.ModelViewSet):
-    queryset = ClubTeam.objects.all()
-    serializer_class = ClubTeamSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 @method_decorator(csrf_exempt, name='dispatch')

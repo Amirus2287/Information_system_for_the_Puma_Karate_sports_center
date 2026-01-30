@@ -14,9 +14,23 @@ export const competitionsApi = {
   
   getCategories: async (competitionId?: number): Promise<CompetitionCategory[]> => {
     const response = await api.get('/api/competitions/categories/', {
-      params: competitionId ? { competition_id: competitionId } : {}
+      params: competitionId ? { competition: competitionId } : {}
     })
     return response.data
+  },
+
+  createCategory: async (data: { competition: number; name: string; age_min?: number; age_max?: number; weight_min?: number; weight_max?: number }): Promise<CompetitionCategory> => {
+    const response = await api.post('/api/competitions/categories/', data)
+    return response.data
+  },
+
+  updateCategory: async (id: number, data: Partial<CompetitionCategory>): Promise<CompetitionCategory> => {
+    const response = await api.patch(`/api/competitions/categories/${id}/`, data)
+    return response.data
+  },
+
+  deleteCategory: async (id: number): Promise<void> => {
+    await api.delete(`/api/competitions/categories/${id}/`)
   },
   
   createCompetition: async (data: Partial<Competition> & { name: string; location: string; date: string; visible_groups?: number[] }): Promise<Competition> => {

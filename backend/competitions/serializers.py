@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Competition, CompetitionCategory, CompetitionRegistration, CompetitionResult, TeamCompetitionResult
+from .models import Competition, CompetitionCategory, CompetitionRegistration, CompetitionResult
 
 class CompetitionSerializer(serializers.ModelSerializer):
     visible_groups_names = serializers.SerializerMethodField()
@@ -52,12 +52,3 @@ class CompetitionResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompetitionResult
         fields = '__all__'
-
-class TeamCompetitionResultSerializer(serializers.ModelSerializer):
-    competition_name = serializers.CharField(source='competition.name', read_only=True)
-    
-    class Meta:
-        model = TeamCompetitionResult
-        fields = ['id', 'competition', 'competition_name', 'team_name', 
-                 'score', 'place', 'notes', 'created_at']
-        read_only_fields = ['id', 'created_at']

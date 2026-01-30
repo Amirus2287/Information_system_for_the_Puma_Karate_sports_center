@@ -4,8 +4,10 @@ import { trainingsApi } from '../api/trainings'
 import { usersApi } from '../api/users'
 import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
-import { Plus, Edit, Trash2, Users, UserPlus, UserMinus, MapPin, User } from 'lucide-react'
+import { Plus, Edit, Trash2, Users, UserPlus, UserMinus, MapPin, User, Clock } from 'lucide-react'
+import StudentInfoDialog from '../components/profile/StudentInfoDialog'
 import toast from 'react-hot-toast'
+import { formatWorkingHours } from '../utils/formatters'
 
 export default function Groups() {
   const { user } = useAuth()
@@ -90,7 +92,7 @@ export default function Groups() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <Users className="w-5 h-5 text-primary-600" />
+                    <Users className="w-4 h-4 text-primary-600" />
                     <h3 className="font-bold text-lg text-gray-900">{group.name}</h3>
                   </div>
                   
@@ -109,6 +111,13 @@ export default function Groups() {
                             <span className="text-xs text-gray-500">{group.gym_address}</span>
                           )}
                         </div>
+                      </div>
+                    )}
+                    
+                    {group.gym_work_start && (
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        <span>Время работы: <span className="font-medium text-gray-900">{formatWorkingHours(group.gym_work_start, group.gym_work_end)}</span></span>
                       </div>
                     )}
                     
@@ -294,7 +303,7 @@ function GroupForm({ group, onClose }: { group: any; onClose: () => void }) {
               <option value="">Выберите зал</option>
               {gyms?.map((gym: any) => (
                 <option key={gym.id} value={gym.id}>
-                  {gym.name} - {gym.address}
+                  {gym.name} - {gym.address} ({formatWorkingHours(gym.work_start, gym.work_end)})
                 </option>
               ))}
             </select>
@@ -317,6 +326,7 @@ function GroupForm({ group, onClose }: { group: any; onClose: () => void }) {
 function GroupStudentsModal({ group, onClose }: { group: any; onClose: () => void }) {
   const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedStudentForView, setSelectedStudentForView] = useState<number | null>(null)
   
   const { data: allUsers } = useQuery({
     queryKey: ['users'],
@@ -397,18 +407,26 @@ function GroupStudentsModal({ group, onClose }: { group: any; onClose: () => voi
                   >
                     <div>
                       <p className="font-medium text-gray-900">
-                        {item.student.first_name} {item.student.last_name}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedStudentForView(item.student.id)}
+                          className="text-left text-primary-600 hover:text-primary-700 hover:underline focus:outline-none focus:underline"
+                        >
+                          {item.student.first_name} {item.student.last_name}
+                        </button>
                       </p>
                       <p className="text-xs text-gray-500">{item.student.email}</p>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onClick={() => removeStudentMutation.mutate(item.id)}
-                      leftIcon={<UserMinus className="w-4 h-4" />}
-                    >
-                      Удалить
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => removeStudentMutation.mutate(item.id)}
+                        leftIcon={<UserMinus className="w-4 h-4" />}
+                      >
+                        Удалить
+                      </Button>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -458,6 +476,12 @@ function GroupStudentsModal({ group, onClose }: { group: any; onClose: () => voi
             </div>
           </div>
         </div>
+        
+        <StudentInfoDialog
+          open={selectedStudentForView != null}
+          onClose={() => setSelectedStudentForView(null)}
+          userId={selectedStudentForView}
+        />
       </div>
     </div>
   )

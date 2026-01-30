@@ -176,7 +176,7 @@ export default function Settings() {
           
           <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
             <div className="flex items-center gap-2 mb-6">
-              <Award className="w-6 h-6 text-primary-600" />
+              <Award className="w-4 h-4 text-primary-600" />
               <h3 className="text-xl font-bold text-gray-900">Достижения</h3>
             </div>
             
@@ -189,7 +189,7 @@ export default function Settings() {
                   >
                     <div className="flex items-start gap-4">
                       <div className="bg-gradient-to-br from-yellow-400 to-yellow-500 p-3 rounded-lg">
-                        <Award className="w-6 h-6 text-white" />
+                        <Award className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1">
                         <h4 className="font-bold text-gray-900 mb-1">{achievement.title}</h4>
@@ -218,14 +218,14 @@ export default function Settings() {
         <div className="space-y-6">
           <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
             <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-5 h-5 text-primary-600" />
+              <TrendingUp className="w-4 h-4 text-primary-600" />
               <h3 className="font-bold text-gray-900">Статистика</h3>
             </div>
             
             <div className="space-y-4">
               <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-blue-600" />
+                  <Calendar className="w-4 h-4 text-blue-600" />
                   <span className="text-sm font-medium text-gray-700">Тренировок</span>
                 </div>
                 <span className="font-bold text-blue-600">{stats.trainings}</span>
@@ -234,7 +234,7 @@ export default function Settings() {
               {isStudent && (
                 <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <Target className="w-5 h-5 text-green-600" />
+                    <Target className="w-4 h-4 text-green-600" />
                     <span className="text-sm font-medium text-gray-700">Посещаемость</span>
                   </div>
                   <span className="font-bold text-green-600">{stats.attendance}%</span>
@@ -243,7 +243,7 @@ export default function Settings() {
               
               <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-yellow-600" />
+                  <Trophy className="w-4 h-4 text-yellow-600" />
                   <span className="text-sm font-medium text-gray-700">Соревнований</span>
                 </div>
                 <span className="font-bold text-yellow-600">{stats.competitions}</span>
@@ -251,7 +251,7 @@ export default function Settings() {
               
               <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-purple-600" />
+                  <Award className="w-4 h-4 text-purple-600" />
                   <span className="text-sm font-medium text-gray-700">Достижений</span>
                 </div>
                 <span className="font-bold text-purple-600">{stats.achievements}</span>

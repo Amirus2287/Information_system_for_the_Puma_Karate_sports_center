@@ -5,6 +5,7 @@ import Layout from './components/layout/Layout'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
 import Competitions from './pages/Competitions'
+import CompetitionDetail from './pages/CompetitionDetail'
 import Trainings from './pages/Trainings'
 import Homeworks from './pages/Homeworks'
 import Journal from './pages/Journal'
@@ -63,6 +64,7 @@ export default function App() {
               <Route element={<Layout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/competitions" element={<Competitions />} />
+                <Route path="/competitions/:id" element={<CompetitionDetail />} />
                 <Route path="/trainings" element={<Trainings />} />
                 <Route path="/homeworks" element={<Homeworks />} />
                 <Route path="/journal" element={<Journal />} />
