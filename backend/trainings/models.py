@@ -22,6 +22,8 @@ class Group(models.Model):
     name = models.CharField(max_length=255)
     coach = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'is_coach': True})
     gym = models.ForeignKey(Gym, on_delete=models.CASCADE)
+    min_age = models.PositiveIntegerField(null=True, blank=True, verbose_name='Возраст от')
+    max_age = models.PositiveIntegerField(null=True, blank=True, verbose_name='Возраст до')
     
     class Meta:
         verbose_name = 'Группа'

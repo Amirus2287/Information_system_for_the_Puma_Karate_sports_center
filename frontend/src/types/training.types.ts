@@ -16,6 +16,8 @@ export interface Group {
   gym_address?: string
   gym_work_start?: string
   gym_work_end?: string
+  min_age?: number | null
+  max_age?: number | null
   student_count?: number
 }
 

@@ -54,8 +54,9 @@ export default function JournalForm({ open, onClose }: JournalFormProps) {
   
   const loadStudents = async () => {
     if (students.length === 0) {
-      const data = await usersApi.getUsers()
-      setStudents(data.filter((u: any) => u.is_student))
+      const data = await usersApi.getUsers({ page_size: 200 })
+      const list = (data?.results ?? []).filter((u: any) => u.is_student)
+      setStudents(list)
     }
   }
   

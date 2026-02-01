@@ -8,7 +8,6 @@ import {
   Calendar,
   Award,
   MapPin,
-  CreditCard,
   Heart,
   Users,
   FileText,
@@ -72,21 +71,11 @@ export default function StudentInfoDialog({ open, onClose, userId }: StudentInfo
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="text-xl font-bold text-gray-900">
-                {user.first_name} {user.last_name}
+                {user.last_name} {user.first_name}{(user as any).patronymic ? ` ${(user as any).patronymic}` : ''}
               </h2>
               <p className="text-sm text-gray-600">{user.username}</p>
               {user.age != null && (
                 <p className="text-sm text-gray-600">Возраст: {user.age} лет</p>
-              )}
-              {profile && (
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
-                  {[profile.passport_series, profile.passport_number].some(Boolean) && (
-                    <span>Паспорт: {[profile.passport_series, profile.passport_number].filter(Boolean).join(' ') || '—'}</span>
-                  )}
-                  {(profile.snils != null && profile.snils !== '') && (
-                    <span>СНИЛС: {profile.snils}</span>
-                  )}
-                </div>
               )}
             </div>
           </div>
@@ -126,29 +115,6 @@ export default function StudentInfoDialog({ open, onClose, userId }: StudentInfo
               <>
                 <section className="p-4 border border-gray-200 rounded-xl">
                   <h3 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
-                    <CreditCard className="w-4 h-4 text-primary-600" />
-                    Паспортные данные и СНИЛС
-                  </h3>
-                  <dl className="grid gap-2 text-sm">
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-gray-500">Серия и номер</dt>
-                      <dd className="text-gray-900">
-                        {[profile.passport_series, profile.passport_number].filter(Boolean).join(' ') || '—'}
-                      </dd>
-                    </div>
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-gray-500">Кем выдан</dt>
-                      <dd className="text-gray-900">{profile.passport_issued_by || '—'}</dd>
-                    </div>
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-gray-500">СНИЛС</dt>
-                      <dd className="text-gray-900">{profile.snils || '—'}</dd>
-                    </div>
-                  </dl>
-                </section>
-
-                <section className="p-4 border border-gray-200 rounded-xl">
-                  <h3 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
                     <FileText className="w-4 h-4 text-primary-600" />
                     Профиль
                   </h3>
@@ -168,6 +134,12 @@ export default function StudentInfoDialog({ open, onClose, userId }: StudentInfo
                       <dt className="text-gray-500">Лет занятий</dt>
                       <dd className="text-gray-900">{profile.years_of_practice ?? '—'}</dd>
                     </div>
+                    {(profile as any).medical_insurance && (
+                      <div className="flex justify-between gap-4">
+                        <dt className="text-gray-500">Мед. страховка</dt>
+                        <dd className="text-gray-900">{(profile as any).medical_insurance}</dd>
+                      </div>
+                    )}
                     {profile.bio && (
                       <div>
                         <dt className="text-gray-500 mb-1">Биография</dt>

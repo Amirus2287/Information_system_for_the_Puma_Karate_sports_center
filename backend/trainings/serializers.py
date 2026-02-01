@@ -16,8 +16,8 @@ class GroupSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Group
-        fields = ['id', 'name', 'coach', 'coach_name', 'gym', 'gym_name', 'gym_address', 
-                 'gym_work_start', 'gym_work_end', 'student_count']
+        fields = ['id', 'name', 'coach', 'coach_name', 'gym', 'gym_name', 'gym_address',
+                 'gym_work_start', 'gym_work_end', 'min_age', 'max_age', 'student_count']
     
     def get_student_count(self, obj):
         return obj.students.filter(is_active=True).count()

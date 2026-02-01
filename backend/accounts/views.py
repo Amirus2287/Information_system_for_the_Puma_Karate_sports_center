@@ -1,6 +1,7 @@
 from rest_framework import viewsets, generics, permissions, status, filters
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.db.models import Q
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
@@ -16,10 +17,17 @@ from .serializers import (
 User = get_user_model()
 
 
+class UserPageNumberPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 500
+
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = UserPageNumberPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['username', 'first_name', 'last_name', 'email']
     ordering_fields = ['date_joined', 'last_name', 'first_name']

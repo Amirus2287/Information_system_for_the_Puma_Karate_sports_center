@@ -188,10 +188,10 @@ function GymForm({ gym, onClose }: { gym: any; onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 sm:p-0"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-white rounded-2xl p-6 w-full max-w-lg">
+      <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           {gym ? 'Редактировать зал' : 'Добавить зал'}
         </h2>

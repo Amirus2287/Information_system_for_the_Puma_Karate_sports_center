@@ -9,12 +9,13 @@ import Dialog from '../ui/Dialog'
 import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
 import Button from '../ui/Button'
-import { User, Mail, Phone, MapPin, Award, Calendar, Users, Heart, CreditCard } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Award, Calendar, Users, Heart } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const profileSchema = z.object({
   first_name: z.string().min(1, 'Введите имя'),
   last_name: z.string().min(1, 'Введите фамилию'),
+  patronymic: z.string().optional(),
   email: z.string().email('Введите корректный email'),
   phone: z.string().optional(),
   date_of_birth: z.string().optional(),
@@ -25,10 +26,7 @@ const profileSchema = z.object({
   parent_name: z.string().optional(),
   parent_phone: z.string().optional(),
   medical_notes: z.string().optional(),
-  passport_series: z.string().optional(),
-  passport_number: z.string().optional(),
-  passport_issued_by: z.string().optional(),
-  snils: z.string().optional(),
+  medical_insurance: z.string().optional(),
 })
 
 type ProfileFormData = z.infer<typeof profileSchema>
@@ -60,6 +58,7 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
     defaultValues: {
       first_name: '',
       last_name: '',
+      patronymic: '',
       email: '',
       phone: '',
       date_of_birth: '',
@@ -70,10 +69,7 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
       parent_name: '',
       parent_phone: '',
       medical_notes: '',
-      passport_series: '',
-      passport_number: '',
-      passport_issued_by: '',
-      snils: '',
+      medical_insurance: '',
     },
   })
   
@@ -81,6 +77,7 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
     if (user && open) {
       setValue('first_name', user.first_name || '')
       setValue('last_name', user.last_name || '')
+      setValue('patronymic', (user as any).patronymic || '')
       setValue('email', user.email || '')
       setValue('phone', user.phone || '')
       const dob = user.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : ''
@@ -97,10 +94,7 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
       setValue('parent_name', profile.parent_name || '')
       setValue('parent_phone', profile.parent_phone || '')
       setValue('medical_notes', profile.medical_notes || '')
-      setValue('passport_series', profile.passport_series || '')
-      setValue('passport_number', profile.passport_number || '')
-      setValue('passport_issued_by', profile.passport_issued_by || '')
-      setValue('snils', profile.snils || '')
+      setValue('medical_insurance', (profile as any).medical_insurance || '')
     }
   }, [profile, open, setValue])
   
@@ -109,6 +103,7 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
       return usersApi.updateUser(user!.id, {
         first_name: data.first_name,
         last_name: data.last_name,
+        patronymic: data.patronymic || '',
         email: data.email,
         phone: data.phone,
         date_of_birth: data.date_of_birth || null,
@@ -126,10 +121,7 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
         parent_name: data.parent_name || '',
         parent_phone: data.parent_phone || '',
         medical_notes: data.medical_notes || '',
-        passport_series: data.passport_series || '',
-        passport_number: data.passport_number || '',
-        passport_issued_by: data.passport_issued_by || '',
-        snils: data.snils || '',
+        medical_insurance: data.medical_insurance || '',
       }
       
       if (profile?.id) {
@@ -197,57 +189,23 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
                 {...register('first_name')}
                 error={errors.first_name?.message}
               />
-              
               <Input
                 label="Фамилия"
                 {...register('last_name')}
                 error={errors.last_name?.message}
               />
             </div>
-            
+            <Input
+              label="Отчество"
+              {...register('patronymic')}
+              error={errors.patronymic?.message}
+            />
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="Дата рождения"
                 type="date"
                 {...register('date_of_birth')}
                 error={errors.date_of_birth?.message}
-              />
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border-2 border-amber-100">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="bg-amber-600 p-2 rounded-lg">
-                <CreditCard className="w-4 h-4 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900">Паспортные данные и СНИЛС</h3>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="Серия паспорта"
-                  {...register('passport_series')}
-                  error={errors.passport_series?.message}
-                  placeholder="0000"
-                />
-                <Input
-                  label="Номер паспорта"
-                  {...register('passport_number')}
-                  error={errors.passport_number?.message}
-                  placeholder="000000"
-                />
-              </div>
-              <Input
-                label="Кем выдан паспорт"
-                {...register('passport_issued_by')}
-                error={errors.passport_issued_by?.message}
-              />
-              <Input
-                label="СНИЛС"
-                {...register('snils')}
-                error={errors.snils?.message}
-                placeholder="000-000-000 00"
               />
             </div>
           </div>
@@ -348,12 +306,20 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
               <h3 className="text-lg font-bold text-gray-900">Медицинские показания</h3>
             </div>
             
-            <Textarea
-              label="Медицинские показания"
-              {...register('medical_notes')}
-              error={errors.medical_notes?.message}
-              rows={3}
-            />
+            <div className="space-y-4">
+              <Input
+                label="Мед. страховка"
+                {...register('medical_insurance')}
+                error={errors.medical_insurance?.message}
+                placeholder="Номер полиса"
+              />
+              <Textarea
+                label="Медицинские показания"
+                {...register('medical_notes')}
+                error={errors.medical_notes?.message}
+                rows={3}
+              />
+            </div>
           </div>
         </div>
         

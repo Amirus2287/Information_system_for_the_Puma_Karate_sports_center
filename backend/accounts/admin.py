@@ -18,7 +18,7 @@ class UserAdmin(BaseUserAdmin):
     list_filter = ('is_coach', 'is_student', 'is_staff', 'is_superuser', 'is_active')
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        ('Персональная информация', {'fields': ('first_name', 'last_name', 'email', 'phone', 'telegram_id', 'date_of_birth', 'avatar')}),
+        ('Персональная информация', {'fields': ('first_name', 'last_name', 'patronymic', 'email', 'phone', 'date_of_birth', 'avatar')}),
         ('Роли', {'fields': ('is_coach', 'is_student')}),
         ('Разрешения', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Важные даты', {'fields': ('last_login', 'date_joined')}),
@@ -49,7 +49,7 @@ class ProfileAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
         ('Медицинская информация', {
-            'fields': ('medical_notes',),
+            'fields': ('medical_notes', 'medical_insurance'),
             'classes': ('collapse',)
         }),
         ('Спортивные результаты', {

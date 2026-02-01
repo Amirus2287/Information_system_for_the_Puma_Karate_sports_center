@@ -18,11 +18,18 @@ export default function UsersManagement() {
   const [selectedStudentForAchievement, setSelectedStudentForAchievement] = useState<number | undefined>(undefined)
   const [selectedStudentForView, setSelectedStudentForView] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(1)
   
-  const { data: users, isLoading } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => usersApi.getUsers(),
+  const { data: usersData, isLoading } = useQuery({
+    queryKey: ['users', page, searchTerm],
+    queryFn: () => usersApi.getUsers({ page, search: searchTerm || undefined }),
   })
+  
+  const users = usersData?.results ?? []
+  const totalCount = usersData?.count ?? 0
+  const hasNext = !!usersData?.next
+  const hasPrevious = !!usersData?.previous
+  const totalPages = totalCount ? Math.ceil(totalCount / 10) : 1
   
   const deleteMutation = useMutation({
     mutationFn: (id: number) => usersApi.deleteUser(id),
@@ -35,11 +42,10 @@ export default function UsersManagement() {
     },
   })
   
-  const filteredUsers = users?.filter((user: any) =>
-    `${user.first_name} ${user.last_name} ${user.email} ${user.username}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  )
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value)
+    setPage(1)
+  }
   
   if (isLoading) {
     return (
@@ -71,14 +77,14 @@ export default function UsersManagement() {
             type="text"
             placeholder="Поиск пользователей..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
           />
         </div>
       </div>
       
       <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
-        {filteredUsers?.length ? (
+        {users?.length ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -91,7 +97,7 @@ export default function UsersManagement() {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user: any) => (
+                {users.map((user: any) => (
                   <tr key={user.id} className="border-b border-gray-100 hover:bg-red-50 transition-colors">
                     <td className="py-3 px-4">
                       <div className="font-medium text-gray-900">
@@ -101,10 +107,10 @@ export default function UsersManagement() {
                             onClick={() => setSelectedStudentForView(user.id)}
                             className="text-left text-primary-600 hover:text-primary-700 hover:underline focus:outline-none focus:underline"
                           >
-                            {user.first_name} {user.last_name}
+                            {(user as any).last_name} {(user as any).first_name}{(user as any).patronymic ? ` ${(user as any).patronymic}` : ''}
                           </button>
                         ) : (
-                          <span>{user.first_name} {user.last_name}</span>
+                          <span>{user.last_name} {user.first_name}{(user as any).patronymic ? ` ${(user as any).patronymic}` : ''}</span>
                         )}
                       </div>
                       <div className="text-sm text-gray-500">{user.username}</div>
@@ -188,6 +194,34 @@ export default function UsersManagement() {
             <p className="text-gray-500 text-lg font-medium">Нет пользователей</p>
           </div>
         )}
+        {totalCount > 0 && (
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+            <p className="text-sm text-gray-600">
+              Показано {(page - 1) * 10 + 1}–{Math.min(page * 10, totalCount)} из {totalCount}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={!hasPrevious}
+              >
+                Назад
+              </Button>
+              <span className="flex items-center px-3 text-sm text-gray-600">
+                Страница {page} из {totalPages}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={!hasNext}
+              >
+                Вперёд
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
       
       {showForm && (
@@ -224,6 +258,7 @@ function UserForm({ user, onClose }: { user: any; onClose: () => void }) {
     email: user?.email || '',
     first_name: user?.first_name || '',
     last_name: user?.last_name || '',
+    patronymic: (user as any)?.patronymic || '',
     phone: user?.phone || '',
     is_coach: user?.is_coach || user?.is_staff || false,
     is_student: user?.is_student || true,
@@ -268,10 +303,10 @@ function UserForm({ user, onClose }: { user: any; onClose: () => void }) {
   }, [onClose])
   
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={(e) => {
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 sm:p-0" onClick={(e) => {
       if (e.target === e.currentTarget) onClose()
     }}>
-      <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-y-auto">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           {user ? 'Редактировать пользователя' : 'Создать пользователя'}
         </h2>
@@ -328,6 +363,18 @@ function UserForm({ user, onClose }: { user: any; onClose: () => void }) {
                 required
               />
             </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Отчество
+            </label>
+            <input
+              type="text"
+              value={formData.patronymic}
+              onChange={(e) => setFormData({ ...formData, patronymic: e.target.value })}
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+            />
           </div>
           
           <div>

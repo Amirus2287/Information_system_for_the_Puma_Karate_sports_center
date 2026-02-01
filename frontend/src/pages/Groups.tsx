@@ -26,11 +26,12 @@ export default function Groups() {
     enabled: isCoach,
   })
   
-  const { data: allUsers } = useQuery({
+  const { data: usersData } = useQuery({
     queryKey: ['users'],
-    queryFn: () => usersApi.getUsers(),
+    queryFn: () => usersApi.getUsers({ page_size: 200 }),
     enabled: isCoach,
   })
+  const allUsers = usersData?.results ?? []
   
   const { data: groupStudents } = useQuery({
     queryKey: ['group-students', selectedGroup?.id],
@@ -72,12 +73,12 @@ export default function Groups() {
   
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Управление группами</h1>
-          <p className="text-gray-600 mt-1">Создание и управление группами тренировок</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Управление группами</h1>
+          <p className="text-gray-600 mt-1 text-sm sm:text-base">Создание и управление группами тренировок</p>
         </div>
-        <Button onClick={() => { setEditingGroup(null); setShowGroupForm(true) }} leftIcon={<Plus />}>
+        <Button onClick={() => { setEditingGroup(null); setShowGroupForm(true) }} leftIcon={<Plus />} className="w-full sm:w-auto">
           Создать группу
         </Button>
       </div>
@@ -203,6 +204,8 @@ function GroupForm({ group, onClose }: { group: any; onClose: () => void }) {
     name: group?.name || '',
     coach: group?.coach || user?.id || '',
     gym: group?.gym || '',
+    min_age: group?.min_age ?? '',
+    max_age: group?.max_age ?? '',
   })
   
   const { data: gyms } = useQuery({
@@ -210,19 +213,23 @@ function GroupForm({ group, onClose }: { group: any; onClose: () => void }) {
     queryFn: () => trainingsApi.getGyms(),
   })
   
-  const { data: allUsersForCoaches } = useQuery({
+  const { data: coachesData } = useQuery({
     queryKey: ['users'],
-    queryFn: () => usersApi.getUsers(),
+    queryFn: () => usersApi.getUsers({ page_size: 200 }),
   })
-  
-  const coaches = allUsersForCoaches?.filter((user: any) => user.is_coach || user.is_staff) || []
+  const coaches = (coachesData?.results ?? []).filter((user: any) => user.is_coach || user.is_staff)
   
   const mutation = useMutation({
     mutationFn: (data: any) => {
-      if (group) {
-        return trainingsApi.updateGroup(group.id, data)
+      const payload = {
+        ...data,
+        min_age: data.min_age === '' ? null : Number(data.min_age),
+        max_age: data.max_age === '' ? null : Number(data.max_age),
       }
-      return trainingsApi.createGroup(data)
+      if (group) {
+        return trainingsApi.updateGroup(group.id, payload)
+      }
+      return trainingsApi.createGroup(payload)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups'] })
@@ -250,10 +257,10 @@ function GroupForm({ group, onClose }: { group: any; onClose: () => void }) {
   }, [onClose])
   
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={(e) => {
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 sm:p-0" onClick={(e) => {
       if (e.target === e.currentTarget) onClose()
     }}>
-      <div className="bg-white rounded-2xl p-6 w-full max-w-2xl">
+      <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-y-auto">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           {group ? 'Редактировать группу' : 'Создать группу'}
         </h2>
@@ -308,6 +315,37 @@ function GroupForm({ group, onClose }: { group: any; onClose: () => void }) {
               ))}
             </select>
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Возраст от (лет)
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={120}
+                placeholder="Не ограничено"
+                value={formData.min_age}
+                onChange={(e) => setFormData({ ...formData, min_age: e.target.value === '' ? '' : e.target.value })}
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Возраст до (лет)
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={120}
+                placeholder="Не ограничено"
+                value={formData.max_age}
+                onChange={(e) => setFormData({ ...formData, max_age: e.target.value === '' ? '' : e.target.value })}
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+              />
+            </div>
+          </div>
           
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
@@ -328,10 +366,11 @@ function GroupStudentsModal({ group, onClose }: { group: any; onClose: () => voi
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStudentForView, setSelectedStudentForView] = useState<number | null>(null)
   
-  const { data: allUsers } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => usersApi.getUsers({ is_student: true }),
+  const { data: studentsData } = useQuery({
+    queryKey: ['users', 'students'],
+    queryFn: () => usersApi.getUsers({ page_size: 200 }),
   })
+  const allUsers = studentsData?.results ?? []
   
   const { data: groupStudents, refetch } = useQuery({
     queryKey: ['group-students', group.id],
@@ -368,10 +407,19 @@ function GroupStudentsModal({ group, onClose }: { group: any; onClose: () => voi
   })
   
   const currentStudentIds = groupStudents?.map((gs: any) => gs.student) || []
-  const availableStudents = allUsers?.filter((user: any) => 
-    !currentStudentIds.includes(user.id) &&
-    `${user.first_name} ${user.last_name} ${user.email}`.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || []
+  const minAge = group?.min_age != null ? Number(group.min_age) : null
+  const maxAge = group?.max_age != null ? Number(group.max_age) : null
+  const availableStudents = allUsers?.filter((user: any) => {
+    if (currentStudentIds.includes(user.id)) return false
+    if (!`${user.first_name} ${user.last_name} ${user.email}`.toLowerCase().includes(searchTerm.toLowerCase())) return false
+    if (minAge != null || maxAge != null) {
+      const age = user.age != null ? Number(user.age) : null
+      if (age == null) return false
+      if (minAge != null && age < minAge) return false
+      if (maxAge != null && age > maxAge) return false
+    }
+    return true
+  }) || []
   
   const studentsInGroup = groupStudents?.map((gs: any) => ({
     id: gs.id,
@@ -382,10 +430,21 @@ function GroupStudentsModal({ group, onClose }: { group: any; onClose: () => voi
       email: gs.student_email,
     }
   })) || []
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [onClose])
   
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 sm:p-0"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-4xl max-h-[calc(100vh-2rem)] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
             Ученики группы: {group.name}
@@ -395,7 +454,7 @@ function GroupStudentsModal({ group, onClose }: { group: any; onClose: () => voi
           </Button>
         </div>
         
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="font-bold text-gray-900 mb-4">Ученики в группе ({studentsInGroup.length})</h3>
             <div className="space-y-2 max-h-[500px] overflow-y-auto">
@@ -437,6 +496,11 @@ function GroupStudentsModal({ group, onClose }: { group: any; onClose: () => voi
           
           <div>
             <h3 className="font-bold text-gray-900 mb-4">Добавить ученика</h3>
+            {(minAge != null || maxAge != null) && (
+              <p className="text-sm text-gray-600 mb-2">
+                Показаны ученики по возрасту группы: от {minAge ?? '—'} до {maxAge ?? '—'} лет
+              </p>
+            )}
             <div className="mb-4">
               <input
                 type="text"

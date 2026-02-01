@@ -8,7 +8,6 @@ export interface User {
   is_coach: boolean
   is_student: boolean
   is_staff?: boolean  // Администратор
-  telegram_id?: string
   date_of_birth?: string
   age?: number  // вычисляется на бэкенде из date_of_birth
   avatar?: string

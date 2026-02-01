@@ -45,9 +45,9 @@ export default function Dashboard() {
     enabled: !!user,
   })
   
-  const { data: allUsers } = useQuery({
+  useQuery({
     queryKey: ['users', 'dashboard'],
-    queryFn: () => usersApi.getUsers(),
+    queryFn: () => usersApi.getUsers({ page_size: 100 }),
     enabled: !!user && isAdmin,
   })
   
@@ -137,13 +137,13 @@ export default function Dashboard() {
   
   return (
     <div className="space-y-8">
-      <div className="relative bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 rounded-2xl p-8 text-white shadow-elegant-lg overflow-hidden">
+      <div className="relative bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 rounded-2xl p-4 sm:p-8 text-white shadow-elegant-lg overflow-hidden">
         <div className="absolute inset-0 opacity-20">
           <div className="w-full h-full bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.1%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')]"></div>
         </div>
-        <div className="relative flex justify-between items-center">
+        <div className="relative flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-bold mb-2 tracking-tight text-white">
+            <h1 className="text-2xl sm:text-4xl font-bold mb-2 tracking-tight text-white">
               Добро пожаловать {user?.first_name}!
             </h1>
             <p className="text-lg text-red-100 font-medium">
@@ -165,9 +165,8 @@ export default function Dashboard() {
       </div>
 
       <div className="bg-white border-2 border-gray-100 rounded-2xl p-8 shadow-elegant">
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Быстрые действия</h2>
-          <div className="h-1 w-16 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full"></div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {quickActions.map((action, index) => (

@@ -13,8 +13,8 @@ def age_from_birth(birth_date):
 
 
 class User(AbstractUser):
+    patronymic = models.CharField('Отчество', max_length=150, blank=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
-    telegram_id = models.CharField(max_length=100, blank=True, null=True)
     is_coach = models.BooleanField(default=False)
     is_student = models.BooleanField(default=True)
     date_of_birth = models.DateField(null=True, blank=True)
@@ -49,11 +49,7 @@ class Profile(models.Model):
     parent_phone = models.CharField('Телефон родителя', max_length=20, blank=True)
     
     medical_notes = models.TextField('Медицинские показания', blank=True)
-    
-    passport_series = models.CharField('Серия паспорта', max_length=10, blank=True)
-    passport_number = models.CharField('Номер паспорта', max_length=20, blank=True)
-    passport_issued_by = models.CharField('Кем выдан паспорт', max_length=500, blank=True)
-    snils = models.CharField('СНИЛС', max_length=14, blank=True)
+    medical_insurance = models.CharField('Мед. страховка', max_length=100, blank=True)
     
     competitions_participated = models.IntegerField('Участие в соревнованиях', default=0)
     competitions_won = models.IntegerField('Побед в соревнованиях', default=0)

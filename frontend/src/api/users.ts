@@ -1,9 +1,13 @@
 import api from './axiosConfig'
 
 export const usersApi = {
-  getUsers: async (params?: any) => {
+  getUsers: async (params?: { page?: number; search?: string; page_size?: number }) => {
     const response = await api.get('/api/auth/users/', { params })
-    return response.data
+    const data = response.data
+    if (data && typeof data === 'object' && 'results' in data) {
+      return data as { count: number; next: string | null; previous: string | null; results: any[] }
+    }
+    return { count: Array.isArray(data) ? data.length : 0, next: null, previous: null, results: Array.isArray(data) ? data : [] }
   },
   
   getUser: async (id: number) => {
