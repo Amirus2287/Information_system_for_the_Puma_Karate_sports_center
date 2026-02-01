@@ -6,11 +6,13 @@ import { trainingsApi } from '../api/trainings'
 import { competitionsApi } from '../api/competitions'
 import Button from '../components/ui/Button'
 import ProfileForm from '../components/profile/ProfileForm'
-import { Award, Calendar, Target, Trophy, TrendingUp } from 'lucide-react'
+import AchievementForm from '../components/achievements/AchievementForm'
+import { Award, Calendar, Target, Trophy, TrendingUp, Plus } from 'lucide-react'
 
 export default function Settings() {
   const { user } = useAuth()
   const [showProfileForm, setShowProfileForm] = useState(false)
+  const [showAchievementForm, setShowAchievementForm] = useState(false)
   const isStudent = user?.is_student && !user?.is_coach && !user?.is_staff
   const isCoach = user?.is_coach || user?.is_staff
   
@@ -175,9 +177,19 @@ export default function Settings() {
           </div>
           
           <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
-            <div className="flex items-center gap-2 mb-6">
-              <Award className="w-4 h-4 text-primary-600" />
-              <h3 className="text-xl font-bold text-gray-900">Достижения</h3>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Award className="w-4 h-4 text-primary-600" />
+                <h3 className="text-xl font-bold text-gray-900">Достижения</h3>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowAchievementForm(true)}
+                leftIcon={<Plus className="w-4 h-4" />}
+              >
+                Добавить достижение
+              </Button>
             </div>
             
             {achievements?.length ? (
@@ -265,6 +277,14 @@ export default function Settings() {
         <ProfileForm 
           open={showProfileForm} 
           onClose={() => setShowProfileForm(false)} 
+        />
+      )}
+      
+      {showAchievementForm && user && (
+        <AchievementForm
+          open={showAchievementForm}
+          onClose={() => setShowAchievementForm(false)}
+          studentId={user.id}
         />
       )}
     </div>

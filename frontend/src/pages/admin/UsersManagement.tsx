@@ -148,7 +148,7 @@ export default function UsersManagement() {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex justify-end gap-2 flex-wrap">
-                        {isCoach && user.is_student && (
+                        {isCoach && (user.is_student || user.is_coach) && (
                           <Button
                             size="sm"
                             variant="outline"
