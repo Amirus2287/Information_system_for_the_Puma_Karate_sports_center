@@ -56,19 +56,26 @@ class TrainingViewSet(viewsets.ModelViewSet):
         
         date_after = self.request.query_params.get('date_after')
         date_before = self.request.query_params.get('date_before')
+        group_filter = self.request.query_params.get('group')
         
         if date_after:
             queryset = queryset.filter(date__gte=date_after)
         if date_before:
             queryset = queryset.filter(date__lte=date_before)
         
+        # Если указана конкретная группа, фильтруем по ней
+        # Если группа не указана (все группы) - для тренеров/админов показываем все тренировки
         if user.is_student and not is_coach:
             queryset = queryset.filter(
                 group__students__student=user, 
                 group__students__is_active=True
             ).distinct()
         elif is_coach and not user.is_staff:
-            queryset = queryset.filter(group__coach=user)
+            # Если указана конкретная группа, фильтруем только по группам тренера
+            # Если группа не указана (все группы в журнале), показываем все тренировки
+            if group_filter:
+                queryset = queryset.filter(group__coach=user)
+            # Если group_filter не указан, тренер видит все тренировки всех групп
         
         return queryset
 

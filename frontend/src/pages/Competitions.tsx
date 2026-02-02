@@ -109,7 +109,7 @@ export default function Competitions() {
               className="bg-white border-2 border-gray-100 rounded-2xl p-6 hover:border-primary-200 hover:shadow-elegant-lg transition-all relative group"
             >
               {isCoach && (
-                <div className="absolute top-4 right-4 z-[1] flex items-center gap-1">
+                <div className="absolute top-2 right-2 z-[1] flex items-center gap-1">
                   <button
                     type="button"
                     onClick={(e) => {
