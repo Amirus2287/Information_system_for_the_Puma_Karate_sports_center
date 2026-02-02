@@ -157,8 +157,8 @@ export default function CompetitionForm({ open, onClose, competition }: Competit
         if (cat.id) {
           await competitionsApi.updateCategory(cat.id, {
             name: cat.name.trim(),
-            age_min: cat.age_min ?? null,
-            age_max: cat.age_max ?? null,
+            age_min: cat.age_min ?? undefined,
+            age_max: cat.age_max ?? undefined,
           })
         } else {
           await competitionsApi.createCategory({

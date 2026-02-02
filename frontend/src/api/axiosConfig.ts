@@ -1,7 +1,8 @@
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
-let API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '' : 'http://localhost:8000')
+const rawApiUrl = import.meta.env.VITE_API_URL
+let API_URL = rawApiUrl !== undefined ? rawApiUrl : (import.meta.env.DEV ? '' : 'http://localhost:8000')
 if (API_URL && typeof API_URL === 'string' && API_URL.endsWith('/api')) {
   API_URL = API_URL.slice(0, -4)
 }
@@ -27,7 +28,7 @@ async function ensureCsrfToken(): Promise<string | null> {
   }
   
   if (!csrfTokenPromise) {
-    const csrfUrl = import.meta.env.DEV 
+    const csrfUrl = import.meta.env.DEV || API_URL === ''
       ? '/api/auth/csrf-token/'
       : `${API_URL || 'http://localhost:8000'}/api/auth/csrf-token/`
     

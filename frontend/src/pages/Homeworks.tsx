@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { trainingsApi } from '../api/trainings'
 import { useAuth } from '../hooks/useAuth'
@@ -6,6 +6,8 @@ import Button from '../components/ui/Button'
 import HomeworkForm from '../components/trainings/HomeworkForm'
 import { Plus, BookOpen, CheckCircle, XCircle, Calendar, User, Users, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+
+const PAGE_SIZE = 10
 
 export default function Homeworks() {
   const { user } = useAuth()
@@ -17,6 +19,7 @@ export default function Homeworks() {
   const [selectedGroup, setSelectedGroup] = useState<string>('')
   const [showHomeworkForm, setShowHomeworkForm] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
+  const [studentsPage, setStudentsPage] = useState(1)
   
   const { data: groups } = useQuery({
     queryKey: ['groups'],
@@ -47,6 +50,10 @@ export default function Homeworks() {
     enabled: !!selectedGroup && selectedGroup !== '' && isCoach,
     retry: false,
   })
+
+  useEffect(() => {
+    setStudentsPage(1)
+  }, [selectedGroup])
   
   const { data: allHomeworks } = useQuery({
     queryKey: ['homeworks'],
@@ -60,6 +67,23 @@ export default function Homeworks() {
         return studentIds.includes(Number(hw.student))
       })
     : (allHomeworks || [])
+
+  const totalStudents = groupStudents?.length ?? 0
+  const studentsTotalPages = totalStudents ? Math.ceil(totalStudents / PAGE_SIZE) : 1
+  const studentsHasNext = studentsPage < studentsTotalPages
+  const studentsHasPrevious = studentsPage > 1
+  const studentsPageStart = totalStudents ? (studentsPage - 1) * PAGE_SIZE + 1 : 0
+  const studentsPageEnd = Math.min(studentsPage * PAGE_SIZE, totalStudents)
+  const pagedGroupStudents = (groupStudents || []).slice(
+    (studentsPage - 1) * PAGE_SIZE,
+    studentsPage * PAGE_SIZE
+  )
+
+  useEffect(() => {
+    if (studentsPage > studentsTotalPages) {
+      setStudentsPage(studentsTotalPages)
+    }
+  }, [studentsPage, studentsTotalPages])
   
   const handleCreateHomework = (student?: any) => {
     if (student) {
@@ -99,9 +123,11 @@ export default function Homeworks() {
               if (groupId) {
                 setSelectedGroup(groupId)
                 setSelectedStudent(null)
+                setStudentsPage(1)
               } else {
                 setSelectedGroup('')
                 setSelectedStudent(null)
+                setStudentsPage(1)
               }
             }}
             className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
@@ -153,7 +179,7 @@ export default function Homeworks() {
               </div>
             ) : groupStudents && groupStudents.length > 0 ? (
               <div className="space-y-4">
-                {groupStudents.map((groupStudent: any) => {
+                {pagedGroupStudents.map((groupStudent: any) => {
                   const studentId = Number(groupStudent.student)
                   const studentHomeworks = filteredHomeworks.filter(
                     (hw: any) => Number(hw.student) === studentId
@@ -176,6 +202,34 @@ export default function Homeworks() {
                 <p className="text-gray-500 text-sm">
                   В группе нет учеников
                 </p>
+              </div>
+            )}
+            {groupStudents && totalStudents > PAGE_SIZE && (
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                <p className="text-sm text-gray-600">
+                  Показано {studentsPageStart}–{studentsPageEnd} из {totalStudents}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setStudentsPage((p) => Math.max(1, p - 1))}
+                    disabled={!studentsHasPrevious}
+                  >
+                    Назад
+                  </Button>
+                  <span className="flex items-center px-3 text-sm text-gray-600">
+                    Страница {studentsPage} из {studentsTotalPages}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setStudentsPage((p) => p + 1)}
+                    disabled={!studentsHasNext}
+                  >
+                    Вперёд
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -382,6 +436,10 @@ function HomeworkItem({ homework: hw, isCoach }: { homework: any; isCoach: boole
 }
 
 function StudentHomeworksView() {
+  const { user } = useAuth()
+  const isCoach = !!(user?.is_coach || user?.is_staff)
+  const [page, setPage] = useState(1)
+
   const { data: homeworks, isLoading } = useQuery({
     queryKey: ['homeworks'],
     queryFn: () => trainingsApi.getHomeworks(),
@@ -401,6 +459,22 @@ function StudentHomeworksView() {
   const filteredHomeworks = homeworks || []
   const completedCount = filteredHomeworks.filter((hw: any) => hw.completed).length
   const pendingCount = filteredHomeworks.filter((hw: any) => !hw.completed).length
+  const totalCount = filteredHomeworks.length
+  const totalPages = totalCount ? Math.ceil(totalCount / PAGE_SIZE) : 1
+  const hasNext = page < totalPages
+  const hasPrevious = page > 1
+  const pageStart = totalCount ? (page - 1) * PAGE_SIZE + 1 : 0
+  const pageEnd = Math.min(page * PAGE_SIZE, totalCount)
+  const pagedHomeworks = filteredHomeworks.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  )
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages)
+    }
+  }, [page, totalPages])
   
   return (
     <div className="space-y-6">
@@ -415,7 +489,7 @@ function StudentHomeworksView() {
             <BookOpen className="w-8 h-8 text-primary-600" />
             <div>
               <p className="text-sm text-gray-600">Всего заданий</p>
-              <p className="text-2xl font-bold text-gray-900">{filteredHomeworks.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{totalCount}</p>
             </div>
           </div>
         </div>
@@ -440,9 +514,9 @@ function StudentHomeworksView() {
       </div>
       
       <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
-        {filteredHomeworks.length > 0 ? (
+        {totalCount > 0 ? (
           <div className="space-y-4">
-            {filteredHomeworks.map((hw: any) => (
+            {pagedHomeworks.map((hw: any) => (
               <HomeworkItem key={hw.id} homework={hw} isCoach={isCoach} />
             ))}
           </div>
@@ -452,6 +526,34 @@ function StudentHomeworksView() {
             <p className="text-gray-500 text-lg font-medium">
               Нет домашних заданий
             </p>
+          </div>
+        )}
+        {totalCount > PAGE_SIZE && (
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+            <p className="text-sm text-gray-600">
+              Показано {pageStart}–{pageEnd} из {totalCount}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={!hasPrevious}
+              >
+                Назад
+              </Button>
+              <span className="flex items-center px-3 text-sm text-gray-600">
+                Страница {page} из {totalPages}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={!hasNext}
+              >
+                Вперёд
+              </Button>
+            </div>
           </div>
         )}
       </div>

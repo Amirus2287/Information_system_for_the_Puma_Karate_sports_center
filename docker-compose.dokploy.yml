@@ -9,6 +9,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
@@ -23,8 +25,8 @@ services:
     expose:
       - "8000"
     # Если Dokploy не даёт общий network, раскомментировать и задать порт:
-    # ports:
-    #   - "8000:8000"
+    ports:
+      - "8000:8000"
 
   frontend:
     build:
@@ -37,5 +39,5 @@ services:
     depends_on:
       - backend
     ports:
-      - "80:80"
+      - "3000:80"
     # Если фронт и бэк за одним reverse proxy (Traefik/Nginx), можно expose: - "80"

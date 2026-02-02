@@ -5,6 +5,7 @@ export interface Competition {
   date: string
   description: string
   is_active: boolean
+  visible_groups?: number[]
 }
 
 export interface CompetitionCategory {

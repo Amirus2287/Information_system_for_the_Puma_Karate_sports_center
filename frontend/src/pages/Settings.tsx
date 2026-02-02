@@ -38,7 +38,7 @@ export default function Settings() {
         
         if (groupIds.length === 0) return []
         
-        const uniqueGroupIds = [...new Set(groupIds)]
+        const uniqueGroupIds = Array.from(new Set<number>(groupIds))
         const trainings = await Promise.all(
           uniqueGroupIds.map((groupId: number) => 
             trainingsApi.getTrainings({ group: groupId }).catch(() => [])
@@ -56,7 +56,7 @@ export default function Settings() {
         
         if (groupIds.length === 0) return []
         
-        const uniqueGroupIds = [...new Set(groupIds)]
+        const uniqueGroupIds = Array.from(new Set<number>(groupIds))
         const trainings = await Promise.all(
           uniqueGroupIds.map((groupId: number) => 
             trainingsApi.getTrainings({ group: groupId }).catch(() => [])

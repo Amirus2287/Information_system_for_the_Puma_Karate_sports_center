@@ -366,7 +366,7 @@ function NewsForm({ news, onClose }: { news: any; onClose: () => void }) {
               existingSpan.remove()
             }
             const allSpans = fontLabel.querySelectorAll('span')
-            allSpans.forEach(span => {
+            allSpans.forEach((span: Element) => {
               if (!span.classList.contains('ql-stroke') && !span.classList.contains('ql-fill')) {
                 span.remove()
               }
@@ -389,7 +389,7 @@ function NewsForm({ news, onClose }: { news: any; onClose: () => void }) {
               existingSpan.remove()
             }
             const allSpans = sizeLabel.querySelectorAll('span')
-            allSpans.forEach(span => {
+            allSpans.forEach((span: Element) => {
               if (!span.classList.contains('ql-stroke') && !span.classList.contains('ql-fill')) {
                 span.remove()
               }

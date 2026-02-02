@@ -170,6 +170,18 @@ export default function HomeworkForm({ open, onClose, training, student, onSucce
   }
   
   const availableTrainings = training ? [training] : (trainings || [])
+
+  const handleClose = () => {
+    onClose()
+    reset({
+      training: training?.id || '',
+      student: student?.student || 'all',
+      task: '',
+      deadline: '',
+      completed: false,
+    })
+    setSelectedTrainingId(training?.id || null)
+  }
   
   return (
     <Dialog 
