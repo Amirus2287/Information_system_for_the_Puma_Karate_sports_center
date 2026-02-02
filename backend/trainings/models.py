@@ -35,14 +35,15 @@ class Group(models.Model):
 class Training(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='trainings')
     date = models.DateField()
-    time = models.TimeField()
+    time_start = models.TimeField(verbose_name='Время начала')
+    time_end = models.TimeField(verbose_name='Время окончания')
     topic = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     
     class Meta:
         verbose_name = 'Тренировка'
         verbose_name_plural = 'Тренировки'
-        ordering = ['-date', '-time']
+        ordering = ['date', 'time_start']
     
     def __str__(self):
         return f"{self.group} - {self.date}"

@@ -7,10 +7,14 @@ import Button from '../ui/Button'
 const registerSchema = z.object({
   username: z.string().min(3, 'Минимум 3 символа'),
   password: z.string().min(6, 'Минимум 6 символов'),
+  password_confirm: z.string().min(6, 'Минимум 6 символов'),
   first_name: z.string().min(1, 'Введите имя'),
   last_name: z.string().min(1, 'Введите фамилию'),
   email: z.string().email('Введите корректный email'),
   phone: z.string().optional(),
+}).refine((data) => data.password === data.password_confirm, {
+  message: 'Пароли не совпадают',
+  path: ['password_confirm'],
 })
 
 type RegisterFormData = z.infer<typeof registerSchema>
@@ -24,8 +28,13 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
     resolver: zodResolver(registerSchema),
   })
   
+  const handleFormSubmit = (data: RegisterFormData) => {
+    const { password_confirm, ...submitData } = data
+    onSubmit(submitData)
+  }
+  
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <Input
           label="Имя"
@@ -54,6 +63,12 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
       />
       
       <Input
+        label="Телефон"
+        {...register('phone')}
+        error={errors.phone?.message}
+      />
+      
+      <Input
         type="password"
         label="Пароль"
         {...register('password')}
@@ -61,9 +76,10 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
       />
       
       <Input
-        label="Телефон"
-        {...register('phone')}
-        error={errors.phone?.message}
+        type="password"
+        label="Повторение пароля"
+        {...register('password_confirm')}
+        error={errors.password_confirm?.message}
       />
       
       <Button type="submit" loading={isSubmitting} className="w-full">

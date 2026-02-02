@@ -8,7 +8,7 @@ from .serializers import CompetitionSerializer, CompetitionCategorySerializer, C
 def _user_age(user):
     from accounts.models import age_from_birth
     return age_from_birth(user.date_of_birth) if getattr(user, 'date_of_birth', None) else None
-
+    
 
 class CompetitionViewSet(viewsets.ModelViewSet):
     queryset = Competition.objects.all()

@@ -5,9 +5,18 @@ import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
 import TrainingForm from '../components/trainings/TrainingForm'
 import AttendanceModal from '../components/trainings/AttendanceModal'
-import { Plus, Calendar, Clock, Users, MapPin, User, Filter, X, CheckCircle, XCircle, Trash2 } from 'lucide-react'
+import { Plus, Calendar, Clock, Users, MapPin, User, Filter, X, CheckCircle, XCircle, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { formatWorkingHours } from '../utils/formatters'
+import { formatWorkingHours, formatTrainingTime, toLocalDate, toLocalDateString } from '../utils/formatters'
+
+function getWeekMonday(d: Date): Date {
+  const date = new Date(d)
+  date.setHours(0, 0, 0, 0)
+  const day = date.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  date.setDate(date.getDate() + diff)
+  return date
+}
 
 export default function Trainings() {
   const { user } = useAuth()
@@ -19,7 +28,11 @@ export default function Trainings() {
   const [showAttendanceModal, setShowAttendanceModal] = useState(false)
   const [selectedTraining, setSelectedTraining] = useState<any>(null)
   const [selectedGroup, setSelectedGroup] = useState<string>('')
-  const [selectedDate, setSelectedDate] = useState<string>('')
+  const [weekStart, setWeekStart] = useState<Date>(() => getWeekMonday(new Date()))
+  const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming')
+  
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekStart.getDate() + 6)
   
   const { data: groups } = useQuery({
     queryKey: ['groups'],
@@ -28,18 +41,23 @@ export default function Trainings() {
   })
   
   const { data: trainings, isLoading } = useQuery({
-    queryKey: ['trainings', selectedGroup, selectedDate],
+    queryKey: ['trainings', selectedGroup, toLocalDateString(weekStart)],
     queryFn: () => {
-      const params: any = {}
+      const params: any = {
+        date_after: toLocalDateString(weekStart),
+        date_before: toLocalDateString(weekEnd),
+      }
       if (selectedGroup) {
         params.group = selectedGroup
-      }
-      if (selectedDate) {
-        params.date = selectedDate
       }
       return trainingsApi.getTrainings(params)
     },
   })
+  
+  const today = toLocalDateString(new Date())
+  const filteredTrainings = (trainings ?? []).filter((t: any) =>
+    tab === 'upcoming' ? t.date >= today : t.date < today
+  )
   
   if (isLoading) {
     return (
@@ -106,36 +124,88 @@ export default function Trainings() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Дата
+                    Неделя
                   </label>
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const prev = new Date(weekStart)
+                        prev.setDate(prev.getDate() - 7)
+                        setWeekStart(prev)
+                      }}
+                      className="p-2 rounded-lg border-2 border-gray-200 hover:border-primary-500 hover:bg-red-50 transition-colors"
+                      aria-label="Предыдущая неделя"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-gray-600" />
+                    </button>
+                    <span className="flex-1 text-center font-medium text-gray-900 min-w-[200px]">
+                      {weekStart.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })} — {weekEnd.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = new Date(weekStart)
+                        next.setDate(next.getDate() + 7)
+                        setWeekStart(next)
+                      }}
+                      className="p-2 rounded-lg border-2 border-gray-200 hover:border-primary-500 hover:bg-red-50 transition-colors"
+                      aria-label="Следующая неделя"
+                    >
+                      <ChevronRight className="w-5 h-5 text-gray-600" />
+                    </button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setWeekStart(getWeekMonday(new Date()))}
+                    >
+                      Эта неделя
+                    </Button>
+                  </div>
                 </div>
               </div>
-              {(selectedGroup || selectedDate) && (
+              {selectedGroup && (
                 <div className="mt-3 flex items-center gap-2">
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => {
-                      setSelectedGroup('')
-                      setSelectedDate('')
-                    }}
+                    onClick={() => setSelectedGroup('')}
                     leftIcon={<X className="w-4 h-4" />}
                   >
-                    Сбросить фильтры
+                    Сбросить фильтр по группе
                   </Button>
                 </div>
               )}
             </div>
             
-            {trainings?.length ? (
+            <div className="flex border-b-2 border-gray-200 mb-6">
+              <button
+                type="button"
+                onClick={() => setTab('upcoming')}
+                className={`px-4 py-3 font-medium transition-colors ${
+                  tab === 'upcoming'
+                    ? 'text-primary-600 border-b-2 border-primary-500 -mb-0.5'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Ближайшие
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab('past')}
+                className={`px-4 py-3 font-medium transition-colors ${
+                  tab === 'past'
+                    ? 'text-primary-600 border-b-2 border-primary-500 -mb-0.5'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Прошедшие
+              </button>
+            </div>
+            
+            {filteredTrainings.length ? (
               <div className="space-y-4">
-                {trainings.map((training: any) => (
+                {filteredTrainings.map((training: any) => (
                   <TrainingCard
                     key={training.id}
                     training={training}
@@ -147,9 +217,9 @@ export default function Trainings() {
               <div className="text-center py-12">
                 <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg font-medium">
-                  Нет запланированных тренировок
+                  {tab === 'upcoming' ? 'Нет предстоящих тренировок' : 'Нет прошедших тренировок'}
                 </p>
-                {isCoach && (
+                {isCoach && tab === 'upcoming' && (
                   <p className="text-gray-400 text-sm mt-2">
                     Создайте первую тренировку, нажав кнопку выше
                   </p>
@@ -275,7 +345,7 @@ function TrainingCard({ training, isCoach }: { training: any; isCoach: boolean }
             <div className="flex items-center gap-2 text-gray-700">
               <Calendar className="w-4 h-4 text-primary-600" />
               <span className="font-medium">
-                {new Date(training.date).toLocaleDateString('ru-RU', {
+                {toLocalDate(training.date).toLocaleDateString('ru-RU', {
                   day: 'numeric',
                   month: 'long',
                   year: 'numeric'
@@ -285,7 +355,7 @@ function TrainingCard({ training, isCoach }: { training: any; isCoach: boolean }
             
             <div className="flex items-center gap-2 text-gray-700">
               <Clock className="w-4 h-4 text-primary-600" />
-              <span className="font-medium">{training.time}</span>
+              <span className="font-medium">{formatTrainingTime(training.time_start, training.time_end)}</span>
             </div>
             
             {training.coach_name && (

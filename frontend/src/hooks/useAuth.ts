@@ -8,11 +8,12 @@ interface AuthState {
   isAuthenticated: boolean
   setUser: (user: User) => void
   logout: () => Promise<void>
+  refetch: () => Promise<void>
 }
 
 export const useAuth = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
       setUser: (user) => set({ user, isAuthenticated: true }),
@@ -25,6 +26,13 @@ export const useAuth = create<AuthState>()(
           }
         } finally {
           set({ user: null, isAuthenticated: false })
+        }
+      },
+      refetch: async () => {
+        try {
+          const user = await authApi.getMe()
+          if (user) set({ user, isAuthenticated: true })
+        } catch (_) {
         }
       },
     }),

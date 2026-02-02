@@ -139,13 +139,20 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
       
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] })
       queryClient.invalidateQueries({ queryKey: ['user', user?.id] })
-      await refetchAuth()
+      if (typeof refetchAuth === 'function') {
+        await refetchAuth().catch(() => {})
+      }
       
       toast.success('Профиль успешно обновлен')
       onClose()
       reset()
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Ошибка при обновлении профиля')
+      const message = error?.response?.data?.detail
+        || (typeof error?.response?.data === 'object' && error?.response?.data
+          ? Object.values(error.response.data).flat().filter(Boolean)[0] as string
+          : null)
+        || 'Ошибка при обновлении профиля'
+      toast.error(typeof message === 'string' ? message : 'Ошибка при обновлении профиля')
     }
   }
   

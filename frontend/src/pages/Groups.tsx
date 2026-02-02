@@ -367,8 +367,8 @@ function GroupStudentsModal({ group, onClose }: { group: any; onClose: () => voi
   const [selectedStudentForView, setSelectedStudentForView] = useState<number | null>(null)
   
   const { data: studentsData } = useQuery({
-    queryKey: ['users', 'students'],
-    queryFn: () => usersApi.getUsers({ page_size: 200 }),
+    queryKey: ['users', 'students', 'not_in_any_group'],
+    queryFn: () => usersApi.getUsers({ page_size: 200, not_in_any_group: true }),
   })
   const allUsers = studentsData?.results ?? []
   
@@ -411,7 +411,9 @@ function GroupStudentsModal({ group, onClose }: { group: any; onClose: () => voi
   const maxAge = group?.max_age != null ? Number(group.max_age) : null
   const availableStudents = allUsers?.filter((user: any) => {
     if (currentStudentIds.includes(user.id)) return false
-    if (!`${user.first_name} ${user.last_name} ${user.email}`.toLowerCase().includes(searchTerm.toLowerCase())) return false
+    if (user.is_student === false) return false
+    if (!`${user.first_name} ${user.last_name} ${(user.email || '')}`.toLowerCase().includes(searchTerm.toLowerCase())) 
+      return false
     if (minAge != null || maxAge != null) {
       const age = user.age != null ? Number(user.age) : null
       if (age == null) return false

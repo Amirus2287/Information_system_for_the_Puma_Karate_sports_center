@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { usersApi } from '../../api/users'
 import { useAuth } from '../../hooks/useAuth'
 import Button from '../../components/ui/Button'
@@ -20,9 +20,10 @@ export default function UsersManagement() {
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
   
-  const { data: usersData, isLoading } = useQuery({
+  const { data: usersData, isLoading, isFetching } = useQuery({
     queryKey: ['users', page, searchTerm],
     queryFn: () => usersApi.getUsers({ page, search: searchTerm || undefined }),
+    placeholderData: keepPreviousData,
   })
   
   const users = usersData?.results ?? []
@@ -30,6 +31,7 @@ export default function UsersManagement() {
   const hasNext = !!usersData?.next
   const hasPrevious = !!usersData?.previous
   const totalPages = totalCount ? Math.ceil(totalCount / 10) : 1
+  const isInitialLoading = isLoading && users.length === 0
   
   const deleteMutation = useMutation({
     mutationFn: (id: number) => usersApi.deleteUser(id),
@@ -47,7 +49,7 @@ export default function UsersManagement() {
     setPage(1)
   }
   
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
@@ -71,15 +73,20 @@ export default function UsersManagement() {
       </div>
       
       <div className="bg-white border-2 border-gray-100 rounded-xl p-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Поиск пользователей..."
-            value={searchTerm}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-          />
+        <div className="relative flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Поиск пользователей..."
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+            />
+          </div>
+          {isFetching && (
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary-500 border-t-transparent shrink-0" />
+          )}
         </div>
       </div>
       
@@ -92,7 +99,6 @@ export default function UsersManagement() {
                   <th className="text-left py-3 px-4 font-bold text-gray-900">Имя</th>
                   <th className="text-left py-3 px-4 font-bold text-gray-900">Email</th>
                   <th className="text-left py-3 px-4 font-bold text-gray-900">Роль</th>
-                  <th className="text-left py-3 px-4 font-bold text-gray-900">Статус</th>
                   <th className="text-right py-3 px-4 font-bold text-gray-900">Действия</th>
                 </tr>
               </thead>
@@ -134,17 +140,6 @@ export default function UsersManagement() {
                           </span>
                         )}
                       </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      {user.is_active ? (
-                        <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                          Активен
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
-                          Неактивен
-                        </span>
-                      )}
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex justify-end gap-2 flex-wrap">

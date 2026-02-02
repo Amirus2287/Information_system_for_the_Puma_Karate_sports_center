@@ -111,7 +111,7 @@ export default function AttendanceModal({ open, onClose, training }: AttendanceM
         </Select>
         
         <Select 
-          label="Статус посещаемости"
+          label="Посещаемость"
           {...register('present')}
         >
           <option value="true">Присутствовал</option>

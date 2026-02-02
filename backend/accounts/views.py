@@ -34,10 +34,17 @@ class UserViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
+        from trainings.models import GroupStudent
+        not_in_any_group = self.request.query_params.get('not_in_any_group', '').lower() in ('1', 'true', 'yes')
+        if not_in_any_group and (user.is_staff or user.is_coach):
+            ids_in_any_group = set(
+                GroupStudent.objects.filter(is_active=True).values_list('student_id', flat=True).distinct()
+            )
+            qs = User.objects.filter(is_student=True).exclude(id__in=ids_in_any_group)
+            return qs.order_by('last_name', 'first_name')
         if user.is_staff:
-            return User.objects.all()
+            return User.objects.all().order_by('-is_staff', '-is_coach', 'last_name', 'first_name')
         elif user.is_coach:
-            from trainings.models import GroupStudent
             student_ids = GroupStudent.objects.filter(
                 group__coach=user,
                 is_active=True

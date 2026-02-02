@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { Trophy, Calendar, Users, TrendingUp, Award, Clock, BookOpen, Newspaper, UserCog } from 'lucide-react'
 import { trainingsApi } from '../api/trainings'
+import { formatTrainingTime, toLocalDate } from '../utils/formatters'
 import { journalApi } from '../api/journal'
 import { competitionsApi } from '../api/competitions'
 import { usersApi } from '../api/users'
@@ -254,11 +255,11 @@ export default function Dashboard() {
                     <div className="flex gap-4 mt-3 text-sm text-gray-600">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
-                        {new Date(training.date).toLocaleDateString('ru-RU')}
+                        {toLocalDate(training.date).toLocaleDateString('ru-RU')}
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
-                        {training.time}
+                        {formatTrainingTime(training.time_start, training.time_end)}
                       </span>
                       {training.gym_name && (
                         <span className="flex items-center gap-1">

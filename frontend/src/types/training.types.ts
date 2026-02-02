@@ -31,7 +31,8 @@ export interface Training {
   gym_work_start?: string
   gym_work_end?: string
   date: string
-  time: string
+  time_start: string
+  time_end: string
   topic: string
   created_at?: string
 }

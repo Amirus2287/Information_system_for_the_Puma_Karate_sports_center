@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { trainingsApi } from '../api/trainings'
+import { formatTrainingTime, toLocalDate, toLocalDateString } from '../utils/formatters'
 import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
 import TrainingForm from '../components/trainings/TrainingForm'
@@ -18,6 +19,7 @@ export default function Journal() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedTime, setSelectedTime] = useState<string>('18:00')
   const [showTrainingForm, setShowTrainingForm] = useState(false)
+  const [selectedGroup, setSelectedGroup] = useState<string>('')
   
   const weekStart = new Date(currentWeek)
   weekStart.setDate(currentWeek.getDate() - currentWeek.getDay() + 1)
@@ -27,18 +29,24 @@ export default function Journal() {
   weekEnd.setDate(weekStart.getDate() + 6)
   weekEnd.setHours(23, 59, 59, 999)
   
-  const { data: trainings, isLoading } = useQuery({
-    queryKey: ['trainings', 'week', weekStart.toISOString()],
-    queryFn: () => trainingsApi.getTrainings({
-      date_after: weekStart.toISOString().split('T')[0],
-      date_before: weekEnd.toISOString().split('T')[0],
-    }),
-  })
-  
   const { data: groups } = useQuery({
     queryKey: ['groups'],
     queryFn: () => trainingsApi.getGroups(),
-    enabled: isCoach,
+    enabled: !!user,
+  })
+  
+  const { data: trainings, isLoading } = useQuery({
+    queryKey: ['trainings', 'journal', toLocalDateString(weekStart), selectedGroup],
+    queryFn: () => {
+      const params: any = {
+        date_after: toLocalDateString(weekStart),
+        date_before: toLocalDateString(weekEnd),
+      }
+      if (selectedGroup) {
+        params.group = selectedGroup
+      }
+      return trainingsApi.getTrainings(params)
+    },
   })
   
   const getWeekDays = () => {
@@ -54,11 +62,8 @@ export default function Journal() {
   
   const getTrainingsForDay = (date: Date) => {
     if (!trainings) return []
-    const dateStr = date.toISOString().split('T')[0]
-    return trainings.filter((training: any) => {
-      const trainingDate = new Date(training.date).toISOString().split('T')[0]
-      return trainingDate === dateStr
-    })
+    const dateStr = toLocalDateString(date)
+    return trainings.filter((training: any) => training.date === dateStr)
   }
   
   const goToPreviousWeek = () => {
@@ -129,6 +134,24 @@ export default function Journal() {
       </div>
       
       <div className="bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-elegant">
+        <div className="mb-4 p-4 bg-gray-50 border-2 border-gray-100 rounded-xl">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Группа
+          </label>
+          <select
+            value={selectedGroup}
+            onChange={(e) => setSelectedGroup(e.target.value)}
+            className="w-full max-w-xs px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+          >
+            <option value="">Все группы</option>
+            {groups?.map((group: any) => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        
         <div className="flex items-center justify-between mb-4">
           <Button variant="outline" onClick={goToPreviousWeek} leftIcon={<ChevronLeft className="w-4 h-4" />}>
             Предыдущая неделя
@@ -181,7 +204,7 @@ export default function Journal() {
                     >
                       <div className="flex items-center gap-1 mb-1">
                         <Clock className="w-3 h-3" />
-                        <span>{training.time}</span>
+                        <span>{formatTrainingTime(training.time_start, training.time_end)}</span>
                       </div>
                       <div className="font-semibold truncate">{training.group_name || training.group?.name}</div>
                       {training.topic && (
@@ -216,7 +239,7 @@ export default function Journal() {
                     <div className="flex items-center gap-3 mb-2">
                       <Calendar className="w-4 h-4 text-primary-600" />
                       <h3 className="font-bold text-lg text-gray-900">
-                        {new Date(training.date).toLocaleDateString('ru-RU', {
+                        {toLocalDate(training.date).toLocaleDateString('ru-RU', {
                           weekday: 'long',
                           day: 'numeric',
                           month: 'long',
@@ -224,7 +247,7 @@ export default function Journal() {
                         })}
                       </h3>
                       <Clock className="w-4 h-4 text-gray-600" />
-                      <span className="text-sm font-medium text-gray-700">{training.time}</span>
+                      <span className="text-sm font-medium text-gray-700">{formatTrainingTime(training.time_start, training.time_end)}</span>
                     </div>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
@@ -276,7 +299,7 @@ export default function Journal() {
             setShowTrainingForm(false)
             setSelectedDate(null)
           }}
-          initialDate={selectedDate ? selectedDate.toISOString().split('T')[0] : undefined}
+          initialDate={selectedDate ? toLocalDateString(selectedDate) : undefined}
           initialTime={selectedTime}
         />
       )}

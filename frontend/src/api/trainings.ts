@@ -10,6 +10,12 @@ export const trainingsApi = {
     const response = await api.post('/api/trainings/trainings/', data)
     return response.data
   },
+
+  /** Создание тренировок на несколько дат: { group, time_start, time_end, topic?, dates: string[] } */
+  createTrainingsBulk: async (data: { group: number; time_start: string; time_end: string; topic?: string; dates: string[] }) => {
+    const response = await api.post('/api/trainings/trainings/bulk_create/', data)
+    return response.data
+  },
   
   updateTraining: async (id: number, data: any) => {
     const response = await api.patch(`/api/trainings/trainings/${id}/`, data)

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { trainingsApi } from '../../api/trainings'
+import { formatDate, formatTrainingTime } from '../../utils/formatters'
 import Dialog from '../ui/Dialog'
 import Select from '../ui/Select'
 import Textarea from '../ui/Textarea'
@@ -196,7 +197,7 @@ export default function HomeworkForm({ open, onClose, training, student, onSucce
               ) : availableTrainings.length > 0 ? (
                 availableTrainings.map((t: any) => (
                   <option key={t.id} value={t.id}>
-                    {t.group_name || t.group?.name} - {new Date(t.date).toLocaleDateString('ru-RU')} {t.time}
+                    {t.group_name || t.group?.name} - {formatDate(t.date)} {formatTrainingTime(t.time_start, t.time_end)}
                   </option>
                 ))
               ) : (

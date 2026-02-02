@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { trainingsApi } from '../../api/trainings'
+import { formatTrainingTime, toLocalDate } from '../../utils/formatters'
 import Card from '../ui/Card'
 import { Calendar, Clock, Users } from 'lucide-react'
 
@@ -22,12 +23,12 @@ export default function UpcomingTrainings() {
                 <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    <span>{new Date(training.date).toLocaleDateString()}</span>
+                    <span>{toLocalDate(training.date).toLocaleDateString()}</span>
                   </div>
                   
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    <span>{training.time}</span>
+                    <span>{formatTrainingTime(training.time_start, training.time_end)}</span>
                   </div>
                   
                   <div className="flex items-center gap-1">

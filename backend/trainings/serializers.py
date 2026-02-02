@@ -33,7 +33,7 @@ class TrainingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Training
         fields = ['id', 'group', 'group_name', 'coach_name', 'gym_name', 'gym_address',
-                 'gym_work_start', 'gym_work_end', 'date', 'time', 'topic', 'created_at']
+                 'gym_work_start', 'gym_work_end', 'date', 'time_start', 'time_end', 'topic', 'created_at']
         read_only_fields = ['created_at']
 
 class HomeworkSerializer(serializers.ModelSerializer):
@@ -56,12 +56,13 @@ class HomeworkSerializer(serializers.ModelSerializer):
 class AttendanceSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.get_full_name', read_only=True)
     training_date = serializers.DateField(source='training.date', read_only=True)
-    training_time = serializers.TimeField(source='training.time', read_only=True)
+    training_time_start = serializers.TimeField(source='training.time_start', read_only=True)
+    training_time_end = serializers.TimeField(source='training.time_end', read_only=True)
     training_topic = serializers.CharField(source='training.topic', read_only=True)
     
     class Meta:
         model = Attendance
-        fields = ['id', 'training', 'training_date', 'training_time', 'training_topic',
+        fields = ['id', 'training', 'training_date', 'training_time_start', 'training_time_end', 'training_topic',
                  'student', 'student_name', 'present', 'notes', 'created_at']
         read_only_fields = ['created_at']
 
