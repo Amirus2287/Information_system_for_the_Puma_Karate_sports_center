@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import logo from '@/assets/puma-logo.webp'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -12,7 +13,7 @@ export default function Home() {
             <div className="flex items-center space-x-4">
               <div className="relative">
                 <img 
-                  src="/logo.png" 
+                  src={logo} 
                   alt="Пума-Каратэ" 
                   className="w-16 h-16 rounded-xl shadow-lg object-contain"
                 />
@@ -81,7 +82,7 @@ export default function Home() {
             <div className="mb-6 md:mb-0">
               <div className="flex items-center space-x-3 mb-4">
                 <img 
-                  src="/logo.png" 
+                  src={logo} 
                   alt="Пума-Каратэ" 
                   className="w-12 h-12 rounded-lg object-contain"
                 />

@@ -1,8 +1,8 @@
 import { useAuth } from '../../hooks/useAuth'
-import { useNavigate } from 'react-router-dom'
-import { Link } from 'react-router-dom'
-import { User, LogOut, Settings, Menu } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { LogOut, Settings, Menu } from 'lucide-react'
 import Avatar from '../ui/Avatar'
+import logo from '../../assets/puma-logo.webp'
 
 type HeaderProps = { onMenuClick?: () => void }
 
@@ -29,7 +29,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
             >
               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg border-2 border-gray-200 bg-white flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
                 <img
-                  src="/logo.png"
+                  src={logo}
                   alt="Пума-Каратэ"
                   className="w-full h-full object-contain p-1"
                 />
