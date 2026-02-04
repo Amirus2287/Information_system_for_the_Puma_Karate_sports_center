@@ -173,7 +173,7 @@ def login_view(request):
     
     if user is not None:
         login(request, user)
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(user, context={'request': request})
         return Response({
             'user': serializer.data,
             'message': 'Вход выполнен успешно'
@@ -205,5 +205,5 @@ def csrf_token(request):
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def me(request):
-    serializer = UserSerializer(request.user)
+    serializer = UserSerializer(request.user, context={'request': request})
     return Response(serializer.data)

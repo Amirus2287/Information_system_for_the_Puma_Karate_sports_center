@@ -193,7 +193,7 @@ export default function StudentInfoDialog({ open, onClose, userId }: StudentInfo
                     const imageUrl = a.image 
                       ? (a.image.startsWith('http') 
                           ? a.image 
-                          : `${import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '' : 'http://localhost:8000')}/media/${a.image}`)
+                          : a.image.startsWith('/') ? a.image : `/${a.image}`)
                       : null
                     return (
                       <li key={a.id} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">

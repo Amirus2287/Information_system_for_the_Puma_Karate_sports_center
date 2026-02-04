@@ -19,6 +19,8 @@ dependencies = [
     "gunicorn",
     "whitenoise",
     "Pillow",
+    "django-storages",
+    "boto3",
 ]
 
 [tool.setuptools]

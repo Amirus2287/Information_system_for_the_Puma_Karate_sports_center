@@ -4,9 +4,16 @@ from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def env_bool(name, default=False):
+    return os.getenv(name, str(default)).lower() in ("true", "1", "yes", "on")
+
+
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
-DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() in ("true", "1", "yes")
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",") if os.getenv("DJANGO_ALLOWED_HOSTS") else ["*"]
+DEBUG = env_bool("DJANGO_DEBUG", True)
+_allowed_hosts = os.getenv("DJANGO_ALLOWED_HOSTS")
+ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(",") if h.strip()] if _allowed_hosts else ["*"]
+USE_S3 = env_bool("USE_S3", False)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -21,7 +28,12 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_filters',
     'channels',
-    
+]
+
+if USE_S3:
+    INSTALLED_APPS.append('storages')
+
+INSTALLED_APPS += [
     'accounts',
     'competitions',
     'trainings',
@@ -61,7 +73,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
-if os.getenv("USE_SQLITE") == "True":
+if env_bool("USE_SQLITE", False):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -101,12 +113,41 @@ TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static'
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+if USE_S3:
+    AWS_S3_ENDPOINT_URL = os.getenv("MINIO_ENDPOINT_URL")
+    AWS_ACCESS_KEY_ID = os.getenv("MINIO_ACCESS_KEY")
+    AWS_SECRET_ACCESS_KEY = os.getenv("MINIO_SECRET_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("MINIO_BUCKET_NAME", "puma")
+    AWS_S3_REGION_NAME = os.getenv("MINIO_REGION", "us-east-1")
+    AWS_S3_SIGNATURE_VERSION = os.getenv("MINIO_SIGNATURE_VERSION", "s3v4")
+    AWS_S3_ADDRESSING_STYLE = os.getenv("MINIO_ADDRESSING_STYLE", "path")
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = env_bool("MINIO_QUERYSTRING_AUTH", False)
+    AWS_S3_VERIFY = env_bool("MINIO_VERIFY_SSL", True)
+
+    _custom_domain = os.getenv("MINIO_CUSTOM_DOMAIN")
+    if _custom_domain:
+        AWS_S3_CUSTOM_DOMAIN = _custom_domain.rstrip("/")
+        MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+    }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -147,13 +188,13 @@ REST_FRAMEWORK = {
 
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_AGE = 86400
 SESSION_SAVE_EVERY_REQUEST = True
 
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = not DEBUG
 _csrf_origins = os.getenv("CSRF_TRUSTED_ORIGINS")
 if _csrf_origins:
     CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(",") if o.strip()]
@@ -162,6 +203,9 @@ else:
         "http://localhost:3000", "http://localhost:5173",
         "http://127.0.0.1:3000", "http://127.0.0.1:5173",
     ]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 CHANNEL_LAYERS = {
     'default': {

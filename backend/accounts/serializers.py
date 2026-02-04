@@ -6,6 +6,19 @@ from .models import User, Profile, Achievement, News
 User = get_user_model()
 
 
+def build_file_url(file_field, request=None):
+    if not file_field:
+        return None
+    try:
+        url = file_field.url
+    except Exception:
+        return None
+
+    if request and url and not url.startswith(('http://', 'https://')):
+        return request.build_absolute_uri(url)
+    return url
+
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, min_length=6, allow_blank=False)
     age = serializers.IntegerField(read_only=True)
@@ -27,34 +40,8 @@ class UserSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        if representation.get('avatar'):
-            avatar_url = representation['avatar']
-            # ImageField возвращает относительный путь вида "avatars/filename.jpg" (без префикса media/)
-            # Нужно преобразовать его в полный URL
-            if avatar_url and not avatar_url.startswith('http'):
-                request = self.context.get('request')
-                if request:
-                    # ImageField возвращает путь относительно MEDIA_ROOT, например "avatars/file.jpg"
-                    # Нужно добавить префикс MEDIA_URL ("media/") и создать абсолютный URL
-                    if avatar_url.startswith('media/'):
-                        # Если уже есть префикс media/, используем как есть
-                        media_path = avatar_url
-                    elif avatar_url.startswith('/media/'):
-                        # Если есть /media/, убираем начальный слеш
-                        media_path = avatar_url[1:]
-                    else:
-                        # Добавляем префикс media/
-                        media_path = f'media/{avatar_url}'
-                    # build_absolute_uri создает полный URL вида http://host:port/media/avatars/file.jpg
-                    representation['avatar'] = request.build_absolute_uri(media_path)
-                else:
-                    # Если нет request, формируем относительный URL
-                    if avatar_url.startswith('/media/'):
-                        representation['avatar'] = avatar_url
-                    elif avatar_url.startswith('media/'):
-                        representation['avatar'] = f'/{avatar_url}'
-                    else:
-                        representation['avatar'] = f'/media/{avatar_url}'
+        if instance.avatar:
+            representation['avatar'] = build_file_url(instance.avatar, self.context.get('request'))
         return representation
     
     def validate_email(self, value):
@@ -134,30 +121,8 @@ class AchievementSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        if representation.get('image'):
-            image_url = representation['image']
-            # ImageField возвращает относительный путь вида "achievements/filename.jpg"
-            # Нужно преобразовать его в полный URL
-            if image_url and not image_url.startswith('http'):
-                request = self.context.get('request')
-                if request:
-                    # Если image_url уже содержит "media/", используем как есть
-                    # Иначе добавляем префикс "media/"
-                    if image_url.startswith('media/'):
-                        media_path = image_url
-                    elif image_url.startswith('/media/'):
-                        media_path = image_url[1:]
-                    else:
-                        media_path = f'media/{image_url}'
-                    representation['image'] = request.build_absolute_uri(media_path)
-                else:
-                    # Если нет request, формируем относительный URL
-                    if image_url.startswith('/media/'):
-                        representation['image'] = image_url
-                    elif image_url.startswith('media/'):
-                        representation['image'] = f'/{image_url}'
-                    else:
-                        representation['image'] = f'/media/{image_url}'
+        if instance.image:
+            representation['image'] = build_file_url(instance.image, self.context.get('request'))
         return representation
 
 

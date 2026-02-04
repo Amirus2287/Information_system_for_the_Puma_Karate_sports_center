@@ -21,6 +21,8 @@
 | `DB_USER` | Пользователь БД | `puma` |
 | `DB_PASSWORD` | Пароль БД | ваш пароль |
 | `DB_HOST` | Хост БД (внешний или имя сервиса в Dokploy) | `postgres` или IP/домен |
+| `MINIO_ACCESS_KEY` | Access key для S3/MinIO | ваш ключ |
+| `MINIO_SECRET_KEY` | Secret key для S3/MinIO | ваш секрет |
 
 ### Опциональные
 
@@ -31,6 +33,13 @@
 | `DJANGO_ALLOWED_HOSTS` | `*` | Через запятую: `yourdomain.com,www.yourdomain.com` |
 | `CORS_ALLOWED_ORIGINS` | — | Через запятую, без пробелов: `https://app.example.com` |
 | `CSRF_TRUSTED_ORIGINS` | — | Те же домены, что и фронт: `https://app.example.com` |
+| `USE_S3` | `True` | Хранить медиа в S3/MinIO |
+| `MINIO_ENDPOINT_URL` | `https://s3-ef-minio.jkproduction.pro` | Endpoint MinIO |
+| `MINIO_BUCKET_NAME` | `puma` | Название bucket |
+| `MINIO_REGION` | `us-east-1` | Регион bucket |
+| `MINIO_ADDRESSING_STYLE` | `path` | Стиль адресации (path/virtual) |
+| `MINIO_QUERYSTRING_AUTH` | `False` | Подписывать URL query-параметрами |
+| `MINIO_VERIFY_SSL` | `True` | Проверять SSL сертификат MinIO |
 | `VITE_API_URL` | пусто | Для сборки фронта: если API и фронт на одном домене — оставить пустым |
 
 Если фронт и бэк доступны по одному домену (через reverse proxy Dokploy), оставьте `VITE_API_URL` пустым — запросы идут на тот же origin, nginx во фронт-контейнере проксирует `/api` на backend.
@@ -39,16 +48,17 @@
 
 - **Build:** Dokploy соберёт образы из `backend/Dockerfile` и `frontend/Dockerfile`.
 - При первом запуске backend выполнит `migrate`, затем запустится gunicorn.
-- Frontend отдаёт статику и проксирует `/api` на сервис `backend:8000`.
+- Frontend отдаёт статику и проксирует `/api`, `/admin`, `/swagger` на сервис `backend:8000`.
+- Загружаемые файлы (аватары/изображения) сохраняются в MinIO bucket `puma` при `USE_S3=True`.
 
 ## 4. Порты и сеть
 
-- В `docker-compose.dokploy.yml` наружу открыт только **frontend** (порт 80). Backend доступен внутри сети по имени `backend`.
-- Если Dokploy сам настраивает reverse proxy (Traefik и т.п.), привяжите домен к сервису **frontend** (порт 80).
+- В `docker-compose.dokploy.yml` backend публикуется только внутри сети (`expose 8000`), frontend наружу (`3000:80`).
+- Если Dokploy сам настраивает reverse proxy (Traefik и т.п.), привяжите домен к сервису **frontend** (порт `3000`, внутренний `80`).
 
 ## 5. Проверка
 
-- Откройте в браузере URL фронта (домен или IP:80).
+- Откройте в браузере URL фронта (домен или `IP:3000`).
 - Войдите или зарегистрируйтесь; при корректных CORS/CSRF и куках сессия должна работать.
 
 ## Локальная проверка Compose (без Dokploy)
@@ -61,8 +71,14 @@ export DB_USER=puma
 export DB_PASSWORD=your-db-password
 export DB_HOST=host.docker.internal  # или IP хоста с PostgreSQL
 export DB_PORT=5432
+export USE_S3=True
+export MINIO_ENDPOINT_URL=https://s3-ef-minio.jkproduction.pro
+export MINIO_ACCESS_KEY=your-minio-access-key
+export MINIO_SECRET_KEY=your-minio-secret-key
+export MINIO_BUCKET_NAME=puma
+export MINIO_REGION=us-east-1
 
 docker compose -f docker-compose.dokploy.yml up --build
 ```
 
-Фронт будет на http://localhost:80; backend — только внутри сети.
+Фронт будет на http://localhost:3000; backend — только внутри сети.

@@ -1,16 +1,12 @@
 # Docker Compose для деплоя в Dokploy.
 # База PostgreSQL и Redis уже запущены отдельно — креды задаются переменными окружения в Dokploy.
 
-version: "3.8"
-
 services:
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
@@ -22,11 +18,17 @@ services:
       - DB_PORT=${DB_PORT:-5432}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-}
       - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-}
+      - USE_S3=${USE_S3:-True}
+      - MINIO_ENDPOINT_URL=${MINIO_ENDPOINT_URL:-https://s3-ef-minio.jkproduction.pro}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_BUCKET_NAME=${MINIO_BUCKET_NAME:-puma}
+      - MINIO_REGION=${MINIO_REGION:-us-east-1}
+      - MINIO_ADDRESSING_STYLE=${MINIO_ADDRESSING_STYLE:-path}
+      - MINIO_QUERYSTRING_AUTH=${MINIO_QUERYSTRING_AUTH:-False}
+      - MINIO_VERIFY_SSL=${MINIO_VERIFY_SSL:-True}
     expose:
       - "8000"
-    # Если Dokploy не даёт общий network, раскомментировать и задать порт:
-    ports:
-      - "8000:8000"
 
   frontend:
     build:

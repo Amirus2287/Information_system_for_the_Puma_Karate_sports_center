@@ -10,3 +10,5 @@ channels>=4.0
 gunicorn>=21.0
 whitenoise>=6.6
 Pillow>=10.0
+django-storages>=1.14
+boto3>=1.34
