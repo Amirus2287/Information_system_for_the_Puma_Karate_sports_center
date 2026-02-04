@@ -25,19 +25,21 @@ export default function Header({ onMenuClick }: HeaderProps) {
             </button>
             <Link
               to="/dashboard"
-              className="flex items-center gap-2 sm:gap-4 min-w-0 hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 rounded-lg"
+              className="flex items-center gap-3 sm:gap-4 min-w-0 hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 rounded-lg"
             >
-              <img
-                src="/logo.png"
-                alt=""
-                className="w-10 h-10 sm:w-14 sm:h-14 rounded-lg shadow-lg object-contain shrink-0"
-              />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg border-2 border-gray-200 bg-white flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+                <img
+                  src="/logo.png"
+                  alt="Пума-Каратэ"
+                  className="w-full h-full object-contain p-1"
+                />
+              </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-2xl font-bold text-gray-900 tracking-tight truncate">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight truncate leading-tight">
                   Пума-Каратэ
                 </h1>
-                <p className="text-xs sm:text-sm font-medium text-primary-600 hidden sm:block">
-                  Информационная система спортивного центра
+                <p className="text-xs sm:text-sm font-medium text-red-700 hidden sm:block truncate">
+                  Спортивный центр
                 </p>
               </div>
             </Link>
