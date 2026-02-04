@@ -9,7 +9,8 @@ import Dialog from '../ui/Dialog'
 import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
 import Button from '../ui/Button'
-import { User, Mail, Phone, MapPin, Award, Calendar, Users, Heart } from 'lucide-react'
+import Avatar from '../ui/Avatar'
+import { User, Mail, Phone, MapPin, Award, Calendar, Users, Heart, Image as ImageIcon, X, Camera } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const profileSchema = z.object({
@@ -39,6 +40,8 @@ interface ProfileFormProps {
 export default function ProfileForm({ open, onClose }: ProfileFormProps) {
   const queryClient = useQueryClient()
   const { user, refetch: refetchAuth } = useAuth()
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [selectedAvatar, setSelectedAvatar] = useState<File | null | undefined>(undefined)
   
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile', user?.id],
@@ -82,6 +85,14 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
       setValue('phone', user.phone || '')
       const dob = user.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : ''
       setValue('date_of_birth', dob)
+      
+      // Устанавливаем текущую аватарку
+      if (user.avatar) {
+        setAvatarPreview(user.avatar)
+      } else {
+        setAvatarPreview(null)
+      }
+      setSelectedAvatar(undefined)
     }
   }, [user, open, setValue])
   
@@ -100,14 +111,21 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
   
   const updateUserMutation = useMutation({
     mutationFn: (data: Partial<ProfileFormData>) => {
-      return usersApi.updateUser(user!.id, {
+      const updateData: any = {
         first_name: data.first_name,
         last_name: data.last_name,
         patronymic: data.patronymic || '',
         email: data.email,
         phone: data.phone,
         date_of_birth: data.date_of_birth || null,
-      })
+      }
+      
+      // Отправляем аватарку только если она была изменена
+      if (selectedAvatar !== undefined) {
+        updateData.avatar = selectedAvatar
+      }
+      
+      return usersApi.updateUser(user!.id, updateData)
     },
   })
   
@@ -144,6 +162,8 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
       }
       
       toast.success('Профиль успешно обновлен')
+      setAvatarPreview(null)
+      setSelectedAvatar(undefined)
       onClose()
       reset()
     } catch (error: any) {
@@ -158,7 +178,34 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
   
   const handleClose = () => {
     reset()
+    setAvatarPreview(null)
+    setSelectedAvatar(undefined)
     onClose()
+  }
+  
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Размер файла не должен превышать 5 МБ')
+        return
+      }
+      if (!file.type.startsWith('image/')) {
+        toast.error('Выберите файл изображения')
+        return
+      }
+      setSelectedAvatar(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+  
+  const handleRemoveAvatar = () => {
+    setSelectedAvatar(null)
+    setAvatarPreview(null)
   }
   
   if (isLoading) {
@@ -188,6 +235,51 @@ export default function ProfileForm({ open, onClose }: ProfileFormProps) {
                 <User className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-lg font-bold text-gray-900">Основная информация</h3>
+            </div>
+            
+            <div className="flex items-center gap-6 mb-4">
+              <div className="relative">
+                {avatarPreview ? (
+                  <div className="relative">
+                    <Avatar
+                      src={avatarPreview}
+                      alt={`${user?.first_name} ${user?.last_name}`}
+                      className="w-24 h-24"
+                      fallback={`${user?.first_name?.[0] || ''}${user?.last_name?.[0] || ''}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveAvatar}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow-md"
+                      title="Удалить аватарку"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-md">
+                    <User className="w-12 h-12 text-white" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Аватарка
+                </label>
+                <label className="flex items-center gap-2 px-4 py-2 border-2 border-gray-200 rounded-lg cursor-pointer bg-white hover:bg-gray-50 transition-colors w-fit">
+                  <Camera className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm font-medium text-gray-700">
+                    {avatarPreview ? 'Изменить фото' : 'Загрузить фото'}
+                  </span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                  />
+                </label>
+                <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF до 5 МБ</p>
+              </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4">

@@ -5,6 +5,7 @@ import { trainingsApi } from '../api/trainings'
 import { competitionsApi } from '../api/competitions'
 import Button from '../components/ui/Button'
 import ProfileForm from '../components/profile/ProfileForm'
+import Avatar from '../components/ui/Avatar'
 import { Calendar, Target, Trophy, TrendingUp } from 'lucide-react'
 
 export default function Settings() {
@@ -130,9 +131,12 @@ export default function Settings() {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
             <div className="flex items-center gap-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
-                {user?.first_name?.[0]}{user?.last_name?.[0]}
-              </div>
+              <Avatar
+                src={user?.avatar || undefined}
+                alt={`${user?.first_name} ${user?.last_name}`}
+                className="w-24 h-24 shrink-0"
+                fallback={`${user?.first_name?.[0] || ''}${user?.last_name?.[0] || ''}`}
+              />
               
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-gray-900 mb-1">

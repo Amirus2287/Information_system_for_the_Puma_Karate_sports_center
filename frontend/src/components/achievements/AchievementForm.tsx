@@ -10,6 +10,7 @@ import Dialog from '../ui/Dialog'
 import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
 import Button from '../ui/Button'
+import { Image as ImageIcon, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const achievementSchema = z.object({
@@ -17,6 +18,7 @@ const achievementSchema = z.object({
   title: z.string().min(1, 'Введите название достижения'),
   description: z.string().min(1, 'Введите описание'),
   date: z.string().min(1, 'Выберите дату'),
+  image: z.instanceof(File).optional().or(z.null()),
 })
 
 type AchievementFormData = z.infer<typeof achievementSchema>
@@ -31,6 +33,8 @@ export default function AchievementForm({ open, onClose, studentId }: Achievemen
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
   
   const isAdmin = user?.is_staff
   const isCoach = user?.is_coach || isAdmin
@@ -77,6 +81,7 @@ export default function AchievementForm({ open, onClose, studentId }: Achievemen
         title: data.title,
         description: data.description,
         date: data.date,
+        image: selectedImage || undefined,
       })
     },
     onSuccess: () => {
@@ -85,6 +90,8 @@ export default function AchievementForm({ open, onClose, studentId }: Achievemen
       onClose()
       reset()
       setSelectedGroup(null)
+      setImagePreview(null)
+      setSelectedImage(null)
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Ошибка при добавлении достижения')
@@ -98,7 +105,34 @@ export default function AchievementForm({ open, onClose, studentId }: Achievemen
   const handleClose = () => {
     reset()
     setSelectedGroup(null)
+    setImagePreview(null)
+    setSelectedImage(null)
     onClose()
+  }
+  
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Размер файла не должен превышать 5 МБ')
+        return
+      }
+      if (!file.type.startsWith('image/')) {
+        toast.error('Выберите файл изображения')
+        return
+      }
+      setSelectedImage(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+  
+  const handleRemoveImage = () => {
+    setSelectedImage(null)
+    setImagePreview(null)
   }
   
   const students = groupStudents || []
@@ -187,6 +221,44 @@ export default function AchievementForm({ open, onClose, studentId }: Achievemen
           {...register('date')}
           error={errors.date?.message}
         />
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Фото (необязательно)
+          </label>
+          {imagePreview ? (
+            <div className="relative">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
+              />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <ImageIcon className="w-8 h-8 mb-2 text-gray-400" />
+                <p className="mb-2 text-sm text-gray-500">
+                  <span className="font-semibold">Нажмите для загрузки</span> или перетащите файл
+                </p>
+                <p className="text-xs text-gray-500">PNG, JPG, GIF до 5 МБ</p>
+              </div>
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+            </label>
+          )}
+        </div>
         
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={handleClose}>

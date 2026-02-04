@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, Count, Exists, OuterRef
-from .models import Competition, CompetitionCategory, CompetitionRegistration, CompetitionResult
-from .serializers import CompetitionSerializer, CompetitionCategorySerializer, CompetitionRegistrationSerializer, CompetitionResultSerializer
+from .models import Competition, CompetitionCategory, CompetitionRegistration
+from .serializers import CompetitionSerializer, CompetitionCategorySerializer, CompetitionRegistrationSerializer
 
 
 def _user_age(user):
@@ -79,9 +79,4 @@ class CompetitionCategoryViewSet(viewsets.ModelViewSet):
 class CompetitionRegistrationViewSet(viewsets.ModelViewSet):
     queryset = CompetitionRegistration.objects.all()
     serializer_class = CompetitionRegistrationSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-class CompetitionResultViewSet(viewsets.ModelViewSet):
-    queryset = CompetitionResult.objects.all()
-    serializer_class = CompetitionResultSerializer
     permission_classes = [permissions.IsAuthenticated]

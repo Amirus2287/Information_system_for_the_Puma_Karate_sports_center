@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { usersApi } from '../../api/users'
 import Dialog from '../ui/Dialog'
+import Avatar from '../ui/Avatar'
 import {
   User,
   Mail,
@@ -66,9 +67,12 @@ export default function StudentInfoDialog({ open, onClose, userId }: StudentInfo
       ) : (
         <div className="space-y-6">
           <div className="flex items-center gap-4 p-4 bg-primary-50 rounded-xl border border-primary-100">
-            <div className="w-14 h-14 rounded-full bg-primary-600 flex items-center justify-center text-white text-xl font-bold">
-              {(user.first_name?.[0] || '') + (user.last_name?.[0] || '')}
-            </div>
+            <Avatar
+              src={user.avatar || undefined}
+              alt={`${user.first_name} ${user.last_name}`}
+              className="w-14 h-14 shrink-0"
+              fallback={`${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`}
+            />
             <div className="min-w-0 flex-1">
               <h2 className="text-xl font-bold text-gray-900">
                 {user.last_name} {user.first_name}{(user as any).patronymic ? ` ${(user as any).patronymic}` : ''}
@@ -184,13 +188,37 @@ export default function StudentInfoDialog({ open, onClose, userId }: StudentInfo
                 Достижения
               </h3>
               {achievements?.length ? (
-                <ul className="space-y-2">
-                  {achievements.map((a: any) => (
-                    <li key={a.id} className="flex justify-between items-start gap-2 text-sm py-2 border-b border-gray-100 last:border-0">
-                      <span className="font-medium text-gray-900">{a.title}</span>
-                      <span className="text-gray-500 shrink-0">{formatDate(a.date)}</span>
-                    </li>
-                  ))}
+                <ul className="space-y-4">
+                  {achievements.map((a: any) => {
+                    const imageUrl = a.image 
+                      ? (a.image.startsWith('http') 
+                          ? a.image 
+                          : `${import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '' : 'http://localhost:8000')}/media/${a.image}`)
+                      : null
+                    return (
+                      <li key={a.id} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
+                        <div className="flex justify-between items-start gap-2 mb-2">
+                          <span className="font-medium text-gray-900">{a.title}</span>
+                          <span className="text-gray-500 shrink-0 text-xs">{formatDate(a.date)}</span>
+                        </div>
+                        {a.description && (
+                          <p className="text-sm text-gray-600 mb-2">{a.description}</p>
+                        )}
+                        {imageUrl && (
+                          <div className="mt-2">
+                            <img
+                              src={imageUrl}
+                              alt={a.title}
+                              className="w-full max-w-md h-auto rounded-lg border border-gray-200 object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none'
+                              }}
+                            />
+                          </div>
+                        )}
+                      </li>
+                    )
+                  })}
                 </ul>
               ) : (
                 <p className="text-sm text-gray-500">Нет достижений</p>

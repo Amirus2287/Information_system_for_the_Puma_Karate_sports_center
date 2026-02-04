@@ -25,6 +25,34 @@ export const usersApi = {
   },
   
   updateUser: async (id: number, data: any) => {
+    // Если есть файл аватарки или нужно удалить аватарку, используем FormData
+    if (data.avatar instanceof File || data.avatar === null) {
+      const formData = new FormData()
+      if (data.first_name !== undefined) formData.append('first_name', data.first_name)
+      if (data.last_name !== undefined) formData.append('last_name', data.last_name)
+      if (data.patronymic !== undefined) formData.append('patronymic', data.patronymic || '')
+      if (data.email !== undefined) formData.append('email', data.email)
+      if (data.phone !== undefined) formData.append('phone', data.phone || '')
+      if (data.date_of_birth !== undefined) {
+        formData.append('date_of_birth', data.date_of_birth || '')
+      }
+      if (data.avatar !== undefined) {
+        if (data.avatar === null) {
+          // Для удаления файла в Django нужно отправить пустой файл или использовать специальный подход
+          // Отправляем пустой Blob как файл
+          formData.append('avatar', new Blob(), '')
+        } else {
+          formData.append('avatar', data.avatar)
+        }
+      }
+      const response = await api.patch(`/api/auth/users/${id}/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      return response.data
+    }
+    // Обычный JSON запрос
     const response = await api.patch(`/api/auth/users/${id}/`, data)
     return response.data
   },
@@ -40,7 +68,19 @@ export const usersApi = {
   },
   
   createAchievement: async (data: any) => {
-    const response = await api.post('/api/auth/achievements/', data)
+    const formData = new FormData()
+    formData.append('user', data.user.toString())
+    formData.append('title', data.title)
+    formData.append('description', data.description)
+    formData.append('date', data.date)
+    if (data.image) {
+      formData.append('image', data.image)
+    }
+    const response = await api.post('/api/auth/achievements/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
     return response.data
   },
   
@@ -91,7 +131,32 @@ export const usersApi = {
   },
   
   updateAchievement: async (id: number, data: any) => {
-    const response = await api.patch(`/api/auth/achievements/${id}/`, data)
+    const formData = new FormData()
+    if (data.user !== undefined) {
+      formData.append('user', data.user.toString())
+    }
+    if (data.title !== undefined) {
+      formData.append('title', data.title)
+    }
+    if (data.description !== undefined) {
+      formData.append('description', data.description)
+    }
+    if (data.date !== undefined) {
+      formData.append('date', data.date)
+    }
+    if (data.image !== undefined) {
+      if (data.image === null) {
+        // Для удаления файла отправляем пустой Blob
+        formData.append('image', new Blob(), '')
+      } else {
+        formData.append('image', data.image)
+      }
+    }
+    const response = await api.patch(`/api/auth/achievements/${id}/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
     return response.data
   },
   

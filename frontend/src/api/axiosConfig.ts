@@ -64,6 +64,11 @@ api.interceptors.request.use(
       }
     }
     
+    // Don't override Content-Type for FormData - axios will set it automatically with boundary
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type']
+    }
+    
     if (import.meta.env.DEV && (config.url?.includes('/register/') || config.url?.includes('/login/'))) {
       console.log('API Request:', {
         url: config.url,

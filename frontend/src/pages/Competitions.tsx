@@ -109,19 +109,7 @@ export default function Competitions() {
               className="bg-white border-2 border-gray-100 rounded-2xl p-6 hover:border-primary-200 hover:shadow-elegant-lg transition-all relative group"
             >
               {isCoach && (
-                <div className="absolute top-2 right-2 z-[1] flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEdit(competition)
-                    }}
-                    className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-                    title="Редактировать соревнование"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
+                <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1 bg-white rounded-lg shadow-md p-1">
                   <button
                     type="button"
                     onClick={(e) => {
@@ -138,6 +126,18 @@ export default function Competitions() {
                     ) : (
                       <Trash2 className="w-4 h-4" />
                     )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleEdit(competition)
+                    }}
+                    className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+                    title="Редактировать соревнование"
+                  >
+                    <Pencil className="w-4 h-4" />
                   </button>
                 </div>
               )}

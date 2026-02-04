@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Competition, CompetitionCategory, CompetitionRegistration, CompetitionResult
+from .models import Competition, CompetitionCategory, CompetitionRegistration
 
 class CompetitionSerializer(serializers.ModelSerializer):
     visible_groups_names = serializers.SerializerMethodField()
@@ -47,8 +47,3 @@ class CompetitionRegistrationSerializer(serializers.ModelSerializer):
         model = CompetitionRegistration
         fields = '__all__'
         read_only_fields = ['user', 'registered_at']
-
-class CompetitionResultSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CompetitionResult
-        fields = '__all__'

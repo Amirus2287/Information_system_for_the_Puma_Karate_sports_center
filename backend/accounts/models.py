@@ -63,16 +63,6 @@ class Profile(models.Model):
     
     def __str__(self):
         return f"Профиль {self.user.first_name} {self.user.last_name}"
-    
-    @property
-    def full_name(self):
-        return f"{self.user.first_name} {self.user.last_name}"
-    
-    @property
-    def win_rate(self):
-        if self.competitions_participated == 0:
-            return 0
-        return (self.competitions_won / self.competitions_participated) * 100
 
 
 class Achievement(models.Model):
@@ -80,6 +70,7 @@ class Achievement(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     date = models.DateField()
+    image = models.ImageField(upload_to='achievements/', null=True, blank=True)
     
     class Meta:
         verbose_name = 'Достижение'

@@ -46,15 +46,3 @@ class CompetitionRegistration(models.Model):
     
     def __str__(self):
         return f"{self.user} - {self.competition}"
-
-class CompetitionResult(models.Model):
-    registration = models.OneToOneField(CompetitionRegistration, on_delete=models.CASCADE)
-    place = models.IntegerField()
-    score = models.IntegerField(null=True, blank=True)
-    
-    class Meta:
-        verbose_name = 'Результат'
-        verbose_name_plural = 'Результаты'
-    
-    def __str__(self):
-        return f"{self.registration.user}: {self.place} место"

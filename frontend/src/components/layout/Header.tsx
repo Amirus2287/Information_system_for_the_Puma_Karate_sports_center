@@ -1,6 +1,7 @@
 import { useAuth } from '../../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { User, LogOut, Settings, Menu } from 'lucide-react'
+import Avatar from '../ui/Avatar'
 
 type HeaderProps = { onMenuClick?: () => void }
 
@@ -40,9 +41,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
             <div className="h-8 sm:h-10 w-px bg-gray-300 hidden sm:block"></div>
             
             <div className="flex items-center gap-2 sm:gap-3 bg-gray-50 px-2 sm:px-4 py-2 rounded-lg border border-gray-200">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center shadow-md shrink-0">
-                <User className="w-4 h-4 text-white" />
-              </div>
+              <Avatar
+                src={user?.avatar || undefined}
+                alt={`${user?.first_name} ${user?.last_name}`}
+                className="w-8 h-8 sm:w-10 sm:h-10 shrink-0"
+                fallback={`${user?.first_name?.[0] || ''}${user?.last_name?.[0] || ''}`}
+              />
               <div className="hidden md:block">
                 <p className="font-semibold text-gray-900 text-sm">
                   {user?.first_name} {user?.last_name}

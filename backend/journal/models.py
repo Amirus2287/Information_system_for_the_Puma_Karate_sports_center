@@ -8,11 +8,7 @@ class Journal(models.Model):
     coach = models.ForeignKey(User, on_delete=models.CASCADE, related_name='coach_journals')
     date = models.DateField()
     attendance = models.BooleanField(default=True)
-    technique_score = models.IntegerField(null=True, blank=True)
-    kata_score = models.IntegerField(null=True, blank=True)
-    kumite_score = models.IntegerField(null=True, blank=True)
     notes = models.TextField(blank=True)
-    video = models.FileField(upload_to='journal_videos/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
