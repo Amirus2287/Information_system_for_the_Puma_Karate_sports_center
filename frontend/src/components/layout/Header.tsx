@@ -1,5 +1,6 @@
 import { useAuth } from '../../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { User, LogOut, Settings, Menu } from 'lucide-react'
 import Avatar from '../ui/Avatar'
 
@@ -22,19 +23,24 @@ export default function Header({ onMenuClick }: HeaderProps) {
             >
               <Menu className="w-6 h-6 shrink-0" />
             </button>
-            <img
-              src="/logo.png"
-              alt=""
-              className="w-10 h-10 sm:w-14 sm:h-14 rounded-lg shadow-lg object-contain shrink-0"
-            />
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 tracking-tight truncate">
-                Пума-Каратэ
-              </h1>
-              <p className="text-xs sm:text-sm font-medium text-primary-600 hidden sm:block">
-                Информационная система спортивного центра
-              </p>
-            </div>
+            <Link
+              to="/dashboard"
+              className="flex items-center gap-2 sm:gap-4 min-w-0 hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 rounded-lg"
+            >
+              <img
+                src="/logo.png"
+                alt=""
+                className="w-10 h-10 sm:w-14 sm:h-14 rounded-lg shadow-lg object-contain shrink-0"
+              />
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900 tracking-tight truncate">
+                  Пума-Каратэ
+                </h1>
+                <p className="text-xs sm:text-sm font-medium text-primary-600 hidden sm:block">
+                  Информационная система спортивного центра
+                </p>
+              </div>
+            </Link>
           </div>
           
           <div className="flex items-center gap-2 sm:gap-4 lg:gap-6 shrink-0">
