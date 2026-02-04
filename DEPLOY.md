@@ -38,7 +38,8 @@
 | `MINIO_BUCKET_NAME` | `puma` | Название bucket |
 | `MINIO_REGION` | `us-east-1` | Регион bucket |
 | `MINIO_ADDRESSING_STYLE` | `path` | Стиль адресации (path/virtual) |
-| `MINIO_QUERYSTRING_AUTH` | `False` | Подписывать URL query-параметрами |
+| `MINIO_QUERYSTRING_AUTH` | `True` | Подписывать URL query-параметрами (нужно для приватного bucket) |
+| `MINIO_QUERYSTRING_EXPIRE` | `3600` | Время жизни подписанного URL в секундах |
 | `MINIO_VERIFY_SSL` | `True` | Проверять SSL сертификат MinIO |
 | `VITE_API_URL` | пусто | Для сборки фронта: если API и фронт на одном домене — оставить пустым |
 
@@ -53,8 +54,8 @@
 
 ## 4. Порты и сеть
 
-- В `docker-compose.dokploy.yml` backend публикуется только внутри сети (`expose 8000`), frontend наружу (`3000:80`).
-- Если Dokploy сам настраивает reverse proxy (Traefik и т.п.), привяжите домен к сервису **frontend** (порт `3000`, внутренний `80`).
+- В `docker-compose.dokploy.yml` frontend наружу на `23561:80`, backend наружу на `23562:8000`.
+- Если Dokploy/DSM настраивает reverse proxy, направляйте фронт на порт `23561`, backend на `23562`.
 
 ## 5. Проверка
 
@@ -77,8 +78,10 @@ export MINIO_ACCESS_KEY=your-minio-access-key
 export MINIO_SECRET_KEY=your-minio-secret-key
 export MINIO_BUCKET_NAME=puma
 export MINIO_REGION=us-east-1
+export MINIO_QUERYSTRING_AUTH=True
+export MINIO_QUERYSTRING_EXPIRE=3600
 
 docker compose -f docker-compose.dokploy.yml up --build
 ```
 
-Фронт будет на http://localhost:3000; backend — только внутри сети.
+Фронт будет на http://localhost:23561; backend — на http://localhost:23562.
