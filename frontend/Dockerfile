@@ -1,5 +1,5 @@
 # Build stage
-FROM oven/bun:1-alpine AS builder
+FROM oven/bun:1.2.19-alpine AS builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ COPY . .
 ARG VITE_API_URL
 ENV VITE_API_URL=${VITE_API_URL}
 
-RUN bun run build
+RUN bun ./node_modules/typescript/lib/tsc.js && bun ./node_modules/vite/bin/vite.js build
 
 # Production stage — nginx
 FROM nginx:alpine
