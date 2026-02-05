@@ -125,52 +125,52 @@ export default function Settings() {
   }
   
   return (
-    <div className="space-y-4 sm:space-y-6 w-full overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+    <div className="space-y-3 sm:space-y-6 w-full overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3">
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Настройки</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">Ваша личная информация</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Настройки</h1>
+          <p className="text-xs sm:text-sm lg:text-base text-gray-600 mt-0.5 sm:mt-1">Ваша личная информация</p>
         </div>
         <Button variant="outline" onClick={() => setShowProfileForm(true)} className="shrink-0 text-xs sm:text-sm">
           Редактировать профиль
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
-        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-          <div className="bg-white border-2 border-gray-100 rounded-2xl p-4 sm:p-6 shadow-elegant w-full overflow-x-hidden">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 w-full">
+        <div className="lg:col-span-2 space-y-3 sm:space-y-6">
+          <div className="bg-white border-2 border-gray-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-6 shadow-elegant w-full overflow-x-hidden">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 lg:gap-6">
               <Avatar
                 src={user?.avatar || undefined}
                 alt={`${user?.first_name} ${user?.last_name}`}
-                className="w-20 h-20 sm:w-24 sm:h-24 shrink-0"
+                className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 shrink-0"
                 fallback={`${user?.first_name?.[0] || ''}${user?.last_name?.[0] || ''}`}
               />
               
               <div className="flex-1 min-w-0">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 break-words">
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1 break-words">
                   {user?.first_name} {user?.last_name}
                 </h2>
-                <p className="text-sm sm:text-base text-gray-600 mb-3 break-words">@{user?.username}</p>
+                <p className="text-xs sm:text-sm lg:text-base text-gray-600 mb-2 sm:mb-3 break-words">@{user?.username}</p>
                 
-                <div className="flex gap-2 mb-4">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                   {getRoleBadges().map((badge, index) => (
                     <span
                       key={index}
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${badge.color}`}
+                      className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium ${badge.color}`}
                     >
                       {badge.label}
                     </span>
                   ))}
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                   <div>
-                    <p className="text-gray-500 mb-1">Email</p>
-                    <p className="font-medium text-gray-900">{user?.email}</p>
+                    <p className="text-gray-500 mb-0.5 sm:mb-1">Email</p>
+                    <p className="font-medium text-gray-900 break-all">{user?.email}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500 mb-1">Телефон</p>
+                    <p className="text-gray-500 mb-0.5 sm:mb-1">Телефон</p>
                     <p className="font-medium text-gray-900">{user?.phone || 'Не указан'}</p>
                   </div>
                 </div>
@@ -180,61 +180,62 @@ export default function Settings() {
           
         </div>
         
-        <div className="space-y-6">
-          <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-4 h-4 text-primary-600" />
-              <h3 className="font-bold text-gray-900">Статистика</h3>
+        <div className="space-y-4 sm:space-y-6">
+          <div className="bg-white border-2 border-gray-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-elegant">
+            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+              <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-600" />
+              <h3 className="font-bold text-gray-900 text-sm sm:text-base">Статистика</h3>
             </div>
             
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-700">Тренировок</span>
+            <div className="space-y-2 sm:space-y-4">
+              <div className="flex justify-between items-center p-2 sm:p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-700">Тренировок</span>
                 </div>
-                <span className="font-bold text-blue-600">{stats.trainings}</span>
+                <span className="font-bold text-blue-600 text-sm sm:text-base">{stats.trainings}</span>
               </div>
               
               {isStudent && (
-                <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Target className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-medium text-gray-700">Посещаемость</span>
+                <div className="flex justify-between items-center p-2 sm:p-3 bg-green-50 rounded-lg">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" />
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">Посещаемость</span>
                   </div>
-                  <span className="font-bold text-green-600">{stats.attendance}%</span>
+                  <span className="font-bold text-green-600 text-sm sm:text-base">{stats.attendance}%</span>
                 </div>
               )}
               
-              <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-yellow-600" />
-                  <span className="text-sm font-medium text-gray-700">Соревнований</span>
+              <div className="flex justify-between items-center p-2 sm:p-3 bg-yellow-50 rounded-lg">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-600" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-700">Соревнований</span>
                 </div>
-                <span className="font-bold text-yellow-600">{stats.competitions}</span>
+                <span className="font-bold text-yellow-600 text-sm sm:text-base">{stats.competitions}</span>
               </div>
             </div>
           </div>
           
-          <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-primary-600" />
-                <h3 className="font-bold text-gray-900">Достижения</h3>
+          <div className="bg-white border-2 border-gray-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-elegant">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-600" />
+                <h3 className="font-bold text-gray-900 text-sm sm:text-base">Достижения</h3>
               </div>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => setShowAchievementForm(true)}
-                leftIcon={<Plus className="w-4 h-4" />}
+                leftIcon={<Plus className="w-3 h-3 sm:w-4 sm:h-4" />}
+                className="text-xs"
               >
-                Добавить
+                <span className="hidden sm:inline">Добавить</span>
               </Button>
             </div>
             
             {achievements && achievements.length > 0 ? (
-              <div className="space-y-4">
-                {achievements.map((achievement: any) => {
+              <div className="space-y-3 sm:space-y-4">
+                {achievements.slice(0, 5).map((achievement: any) => {
                   const imageUrl = achievement.image 
                     ? (achievement.image.startsWith('http') 
                         ? achievement.image 
@@ -246,13 +247,13 @@ export default function Settings() {
                     day: 'numeric'
                   })
                   return (
-                    <div key={achievement.id} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
-                      <div className="flex justify-between items-start gap-2 mb-2">
-                        <span className="font-medium text-gray-900">{achievement.title}</span>
+                    <div key={achievement.id} className="border-b border-gray-100 last:border-0 pb-3 sm:pb-4 last:pb-0">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2 mb-1 sm:mb-2">
+                        <span className="font-medium text-gray-900 text-sm sm:text-base">{achievement.title}</span>
                         <span className="text-gray-500 shrink-0 text-xs">{achievementDate}</span>
                       </div>
                       {achievement.description && (
-                        <p className="text-sm text-gray-600 mb-2">{achievement.description}</p>
+                        <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">{achievement.description}</p>
                       )}
                       {imageUrl && (
                         <div className="mt-2">
@@ -260,6 +261,7 @@ export default function Settings() {
                             src={imageUrl}
                             alt={achievement.title}
                             className="w-full max-w-md h-auto rounded-lg border border-gray-200 object-cover"
+                            loading="lazy"
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = 'none'
                             }}
@@ -271,7 +273,7 @@ export default function Settings() {
                 })}
               </div>
             ) : (
-              <p className="text-sm text-gray-500 text-center py-4">Нет достижений</p>
+              <p className="text-xs sm:text-sm text-gray-500 text-center py-3 sm:py-4">Нет достижений</p>
             )}
           </div>
         </div>

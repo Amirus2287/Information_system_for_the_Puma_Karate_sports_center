@@ -4,6 +4,7 @@ import { trainingsApi } from '../api/trainings'
 import { formatTrainingTime, toLocalDate, toLocalDateString } from '../utils/formatters'
 import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
+import Dialog from '../components/ui/Dialog'
 import TrainingForm from '../components/trainings/TrainingForm'
 import { ChevronLeft, ChevronRight, Plus, Calendar, Clock, Users, MapPin } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -15,19 +16,18 @@ export default function Journal() {
   const isStudent = user?.is_student && !isCoach
   
   const queryClient = useQueryClient()
-  const [currentWeek, setCurrentWeek] = useState(new Date())
+  const [currentDay, setCurrentDay] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedTime, setSelectedTime] = useState<string>('18:00')
   const [showTrainingForm, setShowTrainingForm] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedGroup, setSelectedGroup] = useState<string>('')
   
-  const weekStart = new Date(currentWeek)
-  weekStart.setDate(currentWeek.getDate() - currentWeek.getDay() + 1)
-  weekStart.setHours(0, 0, 0, 0)
+  const dayStart = new Date(currentDay)
+  dayStart.setHours(0, 0, 0, 0)
   
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekStart.getDate() + 6)
-  weekEnd.setHours(23, 59, 59, 999)
+  const dayEnd = new Date(currentDay)
+  dayEnd.setHours(23, 59, 59, 999)
   
   const { data: groups } = useQuery({
     queryKey: ['groups'],
@@ -46,11 +46,11 @@ export default function Journal() {
   }, [isStudent, groups])
   
   const { data: trainings, isLoading } = useQuery({
-    queryKey: ['trainings', 'journal', toLocalDateString(weekStart), selectedGroup],
+    queryKey: ['trainings', 'journal', toLocalDateString(dayStart), selectedGroup],
     queryFn: () => {
       const params: any = {
-        date_after: toLocalDateString(weekStart),
-        date_before: toLocalDateString(weekEnd),
+        date_after: toLocalDateString(dayStart),
+        date_before: toLocalDateString(dayEnd),
       }
       if (selectedGroup) {
         params.group = selectedGroup
@@ -59,54 +59,53 @@ export default function Journal() {
     },
   })
   
-  const getWeekDays = () => {
-    const days = []
-    const start = new Date(weekStart)
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(start)
-      day.setDate(start.getDate() + i)
-      days.push(day)
-    }
-    return days
+  const goToPreviousDay = () => {
+    const newDay = new Date(currentDay)
+    newDay.setDate(currentDay.getDate() - 1)
+    setCurrentDay(newDay)
   }
   
-  const getTrainingsForDay = (date: Date) => {
-    if (!trainings) return []
-    const dateStr = toLocalDateString(date)
-    return trainings.filter((training: any) => training.date === dateStr)
-  }
-  
-  const goToPreviousWeek = () => {
-    const newWeek = new Date(currentWeek)
-    newWeek.setDate(currentWeek.getDate() - 7)
-    setCurrentWeek(newWeek)
-  }
-  
-  const goToNextWeek = () => {
-    const newWeek = new Date(currentWeek)
-    newWeek.setDate(currentWeek.getDate() + 7)
-    setCurrentWeek(newWeek)
+  const goToNextDay = () => {
+    const newDay = new Date(currentDay)
+    newDay.setDate(currentDay.getDate() + 1)
+    setCurrentDay(newDay)
   }
   
   const goToToday = () => {
-    setCurrentWeek(new Date())
+    setCurrentDay(new Date())
   }
   
-  const handleDayClick = (date: Date) => {
+  const handleDayClick = () => {
     if (isCoach) {
-      setSelectedDate(date)
+      setSelectedDate(currentDay)
       setShowTrainingForm(true)
     }
   }
   
-  const formatWeekRange = () => {
-    const end = new Date(weekStart)
-    end.setDate(weekStart.getDate() + 6)
-    return `${weekStart.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })} - ${end.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}`
+  const handleDateSelect = (dateString: string) => {
+    const selected = new Date(dateString)
+    setCurrentDay(selected)
+    setShowDatePicker(false)
   }
   
-  const weekDays = getWeekDays()
-  const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+  const formatDay = () => {
+    return currentDay.toLocaleDateString('ru-RU', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+  }
+  
+  const formatDateForInput = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  
+  const isToday = currentDay.toDateString() === new Date().toDateString()
+  const isPast = currentDay < new Date() && !isToday
   
   if (isLoading) {
     return (
@@ -127,7 +126,7 @@ export default function Journal() {
           <p className="text-sm sm:text-base text-gray-600 mt-1">
             {isCoach 
               ? 'Календарь тренировок. Нажмите на день, чтобы создать тренировку' 
-              : 'Расписание тренировок вашей группы. Переключайте недели стрелками, чтобы посмотреть прошедшие занятия.'}
+              : 'Расписание тренировок вашей группы. Переключайте дни стрелками, чтобы посмотреть прошедшие занятия.'}
           </p>
         </div>
         
@@ -169,151 +168,143 @@ export default function Journal() {
           )}
           {isStudent && (
             <p className="mt-2 text-sm text-gray-500">
-              Вы видите только занятия своей группы. Используйте стрелки «Предыдущая / Следующая неделя», чтобы посмотреть прошедшие или будущие занятия.
+              Вы видите только занятия своей группы. Используйте стрелки «Предыдущий / Следующий день», чтобы посмотреть прошедшие или будущие занятия.
             </p>
           )}
         </div>
         
         <div className="flex items-center justify-between mb-4 gap-2">
-          <Button variant="outline" onClick={goToPreviousWeek} leftIcon={<ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />} className="text-xs sm:text-sm px-2 sm:px-4 shrink-0">
-            <span className="hidden sm:inline">Предыдущая неделя</span>
+          <Button variant="outline" onClick={goToPreviousDay} leftIcon={<ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />} className="text-xs sm:text-sm px-2 sm:px-4 shrink-0">
+            <span className="hidden sm:inline">Предыдущий день</span>
             <span className="sm:hidden">Назад</span>
           </Button>
           
-          <div className="text-center min-w-0 flex-1 px-1">
-            <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-gray-900 break-words">{formatWeekRange()}</h2>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowDatePicker(true)}
+            className="text-center min-w-0 flex-1 px-2 sm:px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+          >
+            <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-gray-900 break-words capitalize flex items-center justify-center gap-2">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600 shrink-0" />
+              <span>{formatDay()}</span>
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">Нажмите для выбора даты</p>
+          </button>
           
-          <Button variant="outline" onClick={goToNextWeek} rightIcon={<ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />} className="text-xs sm:text-sm px-2 sm:px-4 shrink-0">
-            <span className="hidden sm:inline">Следующая неделя</span>
+          <Button variant="outline" onClick={goToNextDay} rightIcon={<ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />} className="text-xs sm:text-sm px-2 sm:px-4 shrink-0">
+            <span className="hidden sm:inline">Следующий день</span>
             <span className="sm:hidden">Вперёд</span>
           </Button>
         </div>
         
-        <div className="grid grid-cols-7 gap-1 sm:gap-2 overflow-x-auto">
-          {weekDays.map((day, index) => {
-            const dayTrainings = getTrainingsForDay(day)
-            const isToday = day.toDateString() === new Date().toDateString()
-            const isPast = day < new Date() && !isToday
-            
-            return (
-              <div
-                key={index}
-                className={`border-2 rounded-xl p-3 min-h-[150px] transition-all ${
-                  isToday
-                    ? 'border-primary-500 bg-primary-50'
-                    : isPast
-                    ? 'border-gray-200 bg-gray-50'
-                    : isCoach
-                    ? 'border-gray-200 bg-white hover:border-primary-300 hover:bg-red-50 cursor-pointer'
-                    : 'border-gray-200 bg-white'
-                }`}
-                onClick={() => handleDayClick(day)}
-              >
-                <div className="mb-2">
-                  <div className="text-xs font-bold text-gray-500 mb-1">{dayNames[index]}</div>
-                  <div className={`text-lg font-bold ${isToday ? 'text-primary-600' : 'text-gray-900'}`}>
-                    {day.getDate()}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  {dayTrainings.map((training: any) => (
-                    <div
-                      key={training.id}
-                      className="bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg p-2 text-xs font-medium hover:shadow-md transition-shadow"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                      }}
-                    >
-                      <div className="flex items-center gap-1 mb-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{formatTrainingTime(training.time_start, training.time_end)}</span>
-                      </div>
-                      <div className="font-semibold truncate">{training.group_name || training.group?.name}</div>
-                      {training.topic && (
-                        <div className="text-xs opacity-90 truncate">{training.topic}</div>
-                      )}
+        <div 
+          className={`border-2 rounded-xl p-4 sm:p-6 transition-all ${
+            isToday
+              ? 'border-primary-500 bg-primary-50'
+              : isPast
+              ? 'border-gray-200 bg-gray-50'
+              : isCoach
+              ? 'border-gray-200 bg-white hover:border-primary-300 hover:bg-red-50 cursor-pointer'
+              : 'border-gray-200 bg-white'
+          }`}
+          onClick={handleDayClick}
+        >
+          {trainings && trainings.length > 0 ? (
+            <div className="space-y-3 sm:space-y-4">
+              {trainings.map((training: any) => (
+                <div
+                  key={training.id}
+                  className="bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg sm:rounded-xl p-4 sm:p-5 hover:shadow-md transition-shadow"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="text-base sm:text-lg font-semibold">{formatTrainingTime(training.time_start, training.time_end)}</span>
                     </div>
-                  ))}
+                    <div className="text-sm sm:text-base font-medium opacity-90">{training.group_name || training.group?.name}</div>
+                  </div>
                   
-                  {isCoach && dayTrainings.length === 0 && !isPast && (
-                    <div className="text-xs text-gray-400 text-center py-2">
-                      Нажмите, чтобы добавить
+                  {training.topic && (
+                    <div className="mb-3">
+                      <div className="text-xs sm:text-sm font-medium opacity-80 mb-1">Тема:</div>
+                      <div className="text-sm sm:text-base font-semibold">{training.topic}</div>
                     </div>
                   )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-      
-      {isStudent && trainings && trainings.length > 0 && (
-        <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Тренировки на неделю</h2>
-          <div className="space-y-4">
-            {trainings.map((training: any) => (
-              <div
-                key={training.id}
-                className="bg-gradient-to-r from-white to-red-50 border-2 border-gray-100 rounded-xl p-5 hover:border-primary-200 hover:shadow-md transition-all"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Calendar className="w-4 h-4 text-primary-600" />
-                      <h3 className="font-bold text-lg text-gray-900">
-                        {toLocalDate(training.date).toLocaleDateString('ru-RU', {
-                          weekday: 'long',
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
-                      </h3>
-                      <Clock className="w-4 h-4 text-gray-600" />
-                      <span className="text-sm font-medium text-gray-700">{formatTrainingTime(training.time_start, training.time_end)}</span>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Users className="w-4 h-4 text-primary-600" />
-                        <span className="font-medium">{training.coach_name || 'Тренер не указан'}</span>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
+                    {training.coach_name && (
+                      <div className="flex items-center gap-2">
+                        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-80" />
+                        <span className="opacity-90">{training.coach_name}</span>
                       </div>
-                      
-                      {training.gym_name && (
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <MapPin className="w-4 h-4 text-primary-600" />
-                          <div>
-                            <span className="font-medium block">{training.gym_name}</span>
-                            {training.gym_address && (
-                              <span className="text-xs text-gray-500">{training.gym_address}</span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {training.group_name && (
-                        <div className="text-sm text-gray-700">
-                          <span className="font-medium">Группа: </span>
-                          <span>{training.group_name}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {training.topic && (
-                      <div className="mt-3 bg-gray-50 rounded-lg p-3">
-                        <p className="text-sm text-gray-700">
-                          <span className="font-medium">Тема: </span>
-                          {training.topic}
-                        </p>
+                    )}
+                    {training.gym_name && (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-80" />
+                        <span className="opacity-90">{training.gym_name}</span>
                       </div>
                     )}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 sm:py-12">
+              {isCoach && !isPast ? (
+                <>
+                  <Calendar className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
+                  <p className="text-sm sm:text-base text-gray-500 font-medium mb-2">
+                    Нет тренировок на этот день
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-400">
+                    Нажмите на день, чтобы добавить тренировку
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Calendar className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
+                  <p className="text-sm sm:text-base text-gray-500 font-medium">
+                    Нет тренировок на этот день
+                  </p>
+                </>
+              )}
+            </div>
+          )}
         </div>
+      </div>
+      
+      
+      {showDatePicker && (
+        <Dialog
+          open={showDatePicker}
+          onOpenChange={setShowDatePicker}
+          title="Выберите дату"
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Дата
+              </label>
+              <input
+                type="date"
+                value={formatDateForInput(currentDay)}
+                onChange={(e) => handleDateSelect(e.target.value)}
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none text-base"
+                min="2020-01-01"
+                max="2100-12-31"
+                autoFocus
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setShowDatePicker(false)}>
+                Закрыть
+              </Button>
+            </div>
+          </div>
+        </Dialog>
       )}
       
       {showTrainingForm && (

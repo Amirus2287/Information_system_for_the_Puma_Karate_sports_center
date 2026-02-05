@@ -14,7 +14,7 @@ export default function Layout() {
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
-        <main className="flex-1 p-2 sm:p-4 lg:p-8 w-full min-w-0 overflow-x-hidden">
+        <main className="flex-1 p-2 sm:p-3 lg:p-8 w-full min-w-0 overflow-x-hidden">
           <div className="max-w-7xl mx-auto w-full">
             <Outlet />
           </div>

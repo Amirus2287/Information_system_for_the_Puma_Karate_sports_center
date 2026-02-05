@@ -136,17 +136,18 @@ export default function Dashboard() {
   const quickActions = getQuickActions()
   
   return (
-    <div className="space-y-4 sm:space-y-6 lg:space-y-8 w-full overflow-x-hidden">
-      <div className="relative bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 rounded-2xl p-4 sm:p-6 lg:p-8 text-white shadow-elegant-lg overflow-hidden w-full">
-        <div className="absolute inset-0 opacity-20">
+    <div className="space-y-3 sm:space-y-6 lg:space-y-8 w-full overflow-x-hidden">
+      <div className="relative bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 rounded-xl sm:rounded-2xl p-3 sm:p-6 lg:p-8 text-white shadow-elegant-lg overflow-hidden w-full">
+        <div className="absolute inset-0 opacity-10 sm:opacity-20">
           <div className="w-full h-full bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.1%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')]"></div>
         </div>
-        <div className="relative flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="relative flex flex-col gap-2 sm:gap-4">
           <div>
-            <h1 className="text-2xl sm:text-4xl font-bold mb-2 tracking-tight text-white">
-              Добро пожаловать {user?.first_name}!
+            <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2 tracking-tight text-white">
+              <span className="hidden sm:inline">Добро пожаловать {user?.first_name}!</span>
+              <span className="sm:hidden">Добро пожаловать!</span>
             </h1>
-            <p className="text-lg text-red-100 font-medium">
+            <p className="text-sm sm:text-base lg:text-lg text-red-100 font-medium">
               {getRoleText()}
             </p>
           </div>
@@ -164,62 +165,68 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="bg-white border-2 border-gray-100 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-elegant w-full overflow-x-hidden">
-        <div className="mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Быстрые действия</h2>
+      <div className="bg-white border-2 border-gray-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 lg:p-8 shadow-elegant w-full overflow-x-hidden">
+        <div className="mb-3 sm:mb-6">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Быстрые действия</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
           {quickActions.map((action, index) => (
             <button
               key={index}
               onClick={action.onClick}
-              className="group p-6 border-2 border-gray-200 rounded-xl hover:border-primary-300 hover:bg-red-50 text-left transition-all duration-200 hover:shadow-md"
+              className="group p-4 sm:p-6 border-2 border-gray-200 rounded-lg sm:rounded-xl hover:border-primary-300 hover:bg-red-50 text-left transition-all duration-200 hover:shadow-md"
             >
-              <div className={`bg-gradient-to-br ${action.gradient} p-3 rounded-lg w-fit mb-4 group-hover:scale-110 transition-transform`}>
-                <action.icon className="w-4 h-4 text-white" />
+              <div className={`bg-gradient-to-br ${action.gradient} p-2 sm:p-3 rounded-lg w-fit mb-3 sm:mb-4 group-hover:scale-110 transition-transform`}>
+                <action.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2 text-lg">{action.title}</h3>
-              <p className="text-sm text-gray-600">{action.description}</p>
+              <h3 className="font-bold text-gray-900 mb-1 sm:mb-2 text-base sm:text-lg">{action.title}</h3>
+              <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">{action.description}</p>
             </button>
           ))}
         </div>
       </div>
       
       {news && news.length > 0 && (
-        <div className="bg-white border-2 border-gray-100 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-elegant w-full overflow-x-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Последние новости</h2>
+        <div className="bg-white border-2 border-gray-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 lg:p-8 shadow-elegant w-full overflow-x-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3 sm:mb-6">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Последние новости</h2>
             {isAdmin && (
               <button 
                 onClick={() => navigate('/admin/news')}
-                className="text-primary-600 hover:text-primary-700 font-medium"
+                className="text-primary-600 hover:text-primary-700 font-medium text-sm sm:text-base"
               >
                 Управление новостями
               </button>
             )}
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {news.slice(0, 3).map((item: any) => (
               <Link
                 key={item.id}
                 to={`/news/${item.id}`}
-                className="block w-full text-left p-5 border-2 border-gray-100 rounded-xl hover:border-primary-200 hover:bg-red-50 transition-all"
+                className="block w-full text-left p-3 sm:p-5 border-2 border-gray-100 rounded-lg sm:rounded-xl hover:border-primary-200 hover:bg-red-50 transition-all"
               >
-                <div className="flex items-start gap-3 mb-2">
-                  <Newspaper className="w-4 h-4 text-primary-600 flex-shrink-0 mt-1" />
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-gray-900 mb-2">{item.title}</h3>
+                <div className="flex items-start gap-2 sm:gap-3 mb-2">
+                  <Newspaper className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-600 flex-shrink-0 mt-0.5 sm:mt-1" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-1 sm:mb-2 line-clamp-2">{item.title}</h3>
                     <div 
-                      className="text-sm text-gray-600 mb-3 line-clamp-2 prose prose-sm max-w-none"
+                      className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3 line-clamp-2 prose prose-sm max-w-none hidden sm:block"
                       dangerouslySetInnerHTML={{ __html: item.content }}
                     />
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span>Автор: {item.author_name || 'Неизвестен'}</span>
-                      <span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs text-gray-500">
+                      <span className="truncate">Автор: {item.author_name || 'Неизвестен'}</span>
+                      <span className="hidden sm:inline">
                         {new Date(item.created_at).toLocaleDateString('ru-RU', {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric'
+                        })}
+                      </span>
+                      <span className="sm:hidden">
+                        {new Date(item.created_at).toLocaleDateString('ru-RU', {
+                          day: 'numeric',
+                          month: 'short'
                         })}
                       </span>
                     </div>
@@ -232,37 +239,37 @@ export default function Dashboard() {
       )}
       
       {isStudent && trainings && trainings.length > 0 && (
-        <div className="bg-white border-2 border-gray-100 rounded-2xl p-8 shadow-elegant">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Ближайшие тренировки</h2>
+        <div className="bg-white border-2 border-gray-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 lg:p-8 shadow-elegant">
+          <div className="flex items-center justify-between mb-3 sm:mb-6">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Ближайшие тренировки</h2>
             <button 
               onClick={() => navigate('/trainings')}
-              className="text-primary-600 hover:text-primary-700 font-medium"
+              className="text-primary-600 hover:text-primary-700 font-medium text-sm sm:text-base"
             >
-              Посмотреть все
+              Все
             </button>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {trainings.slice(0, 3).map((training: any) => (
               <div
                 key={training.id}
-                className="p-4 border-2 border-gray-100 rounded-xl hover:border-primary-200 hover:bg-red-50 transition-all"
+                className="p-3 sm:p-4 border-2 border-gray-100 rounded-lg sm:rounded-xl hover:border-primary-200 hover:bg-red-50 transition-all"
               >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-gray-900">{training.group_name || training.group?.name}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{training.topic || 'Тема не указана'}</p>
-                    <div className="flex gap-4 mt-3 text-sm text-gray-600">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-900 text-sm sm:text-base">{training.group_name || training.group?.name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-1">{training.topic || 'Тема не указана'}</p>
+                    <div className="flex flex-wrap gap-2 sm:gap-4 mt-2 sm:mt-3 text-xs sm:text-sm text-gray-600">
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        {toLocalDate(training.date).toLocaleDateString('ru-RU')}
+                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                        {toLocalDate(training.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
+                        <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                         {formatTrainingTime(training.time_start, training.time_end)}
                       </span>
                       {training.gym_name && (
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1 hidden sm:flex">
                           <Users className="w-4 h-4" />
                           {training.gym_name}
                         </span>
@@ -270,9 +277,9 @@ export default function Dashboard() {
                     </div>
                   </div>
                   {training.coach_name && (
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">Тренер</p>
-                      <p className="font-medium text-gray-900">{training.coach_name}</p>
+                    <div className="text-left sm:text-right">
+                      <p className="text-xs sm:text-sm text-gray-500">Тренер</p>
+                      <p className="font-medium text-gray-900 text-xs sm:text-sm">{training.coach_name}</p>
                     </div>
                   )}
                 </div>

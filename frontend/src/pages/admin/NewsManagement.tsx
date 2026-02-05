@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { usersApi } from '../../api/users'
 import Button from '../../components/ui/Button'
 import Dialog from '../../components/ui/Dialog'
@@ -94,55 +95,59 @@ export default function NewsManagement() {
   }
   
   return (
-    <div className="space-y-6">
-      <div className="relative bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 rounded-2xl p-6 text-white shadow-elegant overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
+    <div className="space-y-3 sm:space-y-6">
+      <div className="relative bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 rounded-xl sm:rounded-2xl p-3 sm:p-6 text-white shadow-elegant overflow-hidden">
+        <div className="absolute inset-0 opacity-10 sm:opacity-20">
           <div className="w-full h-full bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.1%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')]"></div>
         </div>
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
-              <Newspaper className="w-8 h-8 text-white" />
+        <div className="relative flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="bg-white/20 backdrop-blur-sm p-2 sm:p-3 rounded-lg sm:rounded-xl">
+              <Newspaper className="w-5 h-5 sm:w-8 sm:h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">
                 Новости
               </h1>
-              <p className="text-primary-100 mt-0.5 text-sm md:text-base">
+              <p className="text-primary-100 mt-0.5 text-xs sm:text-sm md:text-base hidden sm:block">
                 Создание и редактирование новостей спортивного центра
               </p>
             </div>
           </div>
           <Button
             onClick={() => { setEditingNews(null); setShowForm(true) }}
-            leftIcon={<Plus className="w-4 h-4" />}
-            className="bg-white text-primary-600 hover:bg-primary-50 border-0 shadow-md"
+            leftIcon={<Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+            className="bg-white text-primary-600 hover:bg-primary-50 border-0 shadow-md text-xs sm:text-sm w-full sm:w-auto"
           >
-            Создать новость
+            <span className="hidden sm:inline">Создать новость</span>
+            <span className="sm:hidden">Создать</span>
           </Button>
         </div>
       </div>
       
-      <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
+      <div className="bg-white border-2 border-gray-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-elegant">
         {news?.length ? (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {news.map((item: any) => (
               <div
                 key={item.id}
-                className="bg-gradient-to-r from-white to-red-50 border-2 border-gray-100 rounded-xl p-5 hover:border-primary-200 hover:shadow-md transition-all"
+                className="bg-gradient-to-r from-white to-red-50 border-2 border-gray-100 rounded-lg sm:rounded-xl p-3 sm:p-5 hover:border-primary-200 hover:shadow-md transition-all"
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Newspaper className="w-4 h-4 text-primary-600" />
-                      <h3 className="font-bold text-lg text-gray-900">{item.title}</h3>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
+                  <Link
+                    to={`/news/${item.id}`}
+                    className="flex-1 min-w-0 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                      <Newspaper className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-600 flex-shrink-0" />
+                      <h3 className="font-bold text-base sm:text-lg text-gray-900 line-clamp-2 hover:text-primary-600 transition-colors">{item.title}</h3>
                     </div>
                     <div 
-                      className="text-sm text-gray-600 mb-3 line-clamp-3 prose prose-sm max-w-none"
+                      className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3 line-clamp-3 prose prose-sm max-w-none"
                       dangerouslySetInnerHTML={{ __html: item.content }}
                     />
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span>Автор: {item.author_name || 'Неизвестен'}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs text-gray-500">
+                      <span className="truncate">Автор: {item.author_name || 'Неизвестен'}</span>
                       <span>
                         {new Date(item.created_at).toLocaleDateString('ru-RU', {
                           day: 'numeric',
@@ -151,27 +156,38 @@ export default function NewsManagement() {
                         })}
                       </span>
                     </div>
-                  </div>
-                  <div className="flex gap-2 ml-4">
+                  </Link>
+                  <div className="flex flex-row sm:flex-col gap-2 sm:gap-2 sm:ml-4 sm:items-end shrink-0">
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => { setEditingNews(item); setShowForm(true) }}
-                      leftIcon={<Edit className="w-4 h-4" />}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setEditingNews(item)
+                        setShowForm(true)
+                      }}
+                      leftIcon={<Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                      className="text-xs flex-1 sm:flex-none sm:min-w-[140px] h-9 sm:h-auto"
                     >
-                      Редактировать
+                      <span className="hidden sm:inline">Редактировать</span>
+                      <span className="sm:hidden">Изменить</span>
                     </Button>
                     <Button
                       size="sm"
                       variant="danger"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
                         if (confirm('Вы уверены, что хотите удалить эту новость?')) {
                           deleteMutation.mutate(item.id)
                         }
                       }}
-                      leftIcon={<Trash2 className="w-4 h-4" />}
+                      leftIcon={<Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                      className="text-xs flex-1 sm:flex-none sm:min-w-[140px] h-9 sm:h-auto"
                     >
-                      Удалить
+                      <span className="hidden sm:inline">Удалить</span>
+                      <span className="sm:hidden">Удалить</span>
                     </Button>
                   </div>
                 </div>
@@ -197,7 +213,7 @@ export default function NewsManagement() {
   )
 }
 
-function NewsForm({ news, onClose }: { news: any; onClose: () => void }) {
+export function NewsForm({ news, onClose }: { news: any; onClose: () => void }) {
   const queryClient = useQueryClient()
   const [title, setTitle] = useState(news?.title || '')
   const [content, setContent] = useState(news?.content || '')
@@ -281,8 +297,13 @@ function NewsForm({ news, onClose }: { news: any; onClose: () => void }) {
       }
       return usersApi.createNews(data)
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['news'] })
+      if (news?.id) {
+        queryClient.invalidateQueries({ queryKey: ['news', news.id.toString()] })
+      } else if (data?.id) {
+        queryClient.invalidateQueries({ queryKey: ['news', data.id.toString()] })
+      }
       toast.success(news ? 'Новость обновлена' : 'Новость создана')
       setTitle('')
       setContent('')

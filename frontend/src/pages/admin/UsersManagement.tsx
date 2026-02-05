@@ -63,53 +63,54 @@ export default function UsersManagement() {
   
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Управление пользователями</h1>
-          <p className="text-gray-600 mt-1">Добавление и редактирование пользователей системы</p>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Управление пользователями</h1>
+          <p className="text-xs sm:text-sm text-gray-600 mt-0.5 sm:mt-1 hidden sm:block">Добавление и редактирование пользователей системы</p>
         </div>
         {isAdmin && (
-          <Button onClick={() => { setEditingUser(null); setShowForm(true) }} leftIcon={<Plus />}>
-            Добавить пользователя
+          <Button onClick={() => { setEditingUser(null); setShowForm(true) }} leftIcon={<Plus />} className="text-xs sm:text-sm shrink-0">
+            <span className="hidden sm:inline">Добавить пользователя</span>
+            <span className="sm:hidden">Добавить</span>
           </Button>
         )}
       </div>
       
-      <div className="bg-white border-2 border-gray-100 rounded-xl p-4">
-        <div className="relative flex items-center gap-2">
+      <div className="bg-white border-2 border-gray-100 rounded-xl p-2 sm:p-4">
+        <div className="relative flex items-center gap-1.5 sm:gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Поиск пользователей..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+              className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none text-sm sm:text-base"
             />
           </div>
           {isFetching && (
-            <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary-500 border-t-transparent shrink-0" />
+            <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-2 border-primary-500 border-t-transparent shrink-0" />
           )}
         </div>
       </div>
       
-      <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
+      <div className="bg-white border-2 border-gray-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-elegant">
         {users?.length ? (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto -mx-3 sm:mx-0">
             <table className="w-full">
-              <thead>
+              <thead className="hidden sm:table-header-group">
                 <tr className="border-b-2 border-gray-200">
-                  <th className="text-left py-3 px-4 font-bold text-gray-900">Имя</th>
-                  <th className="text-left py-3 px-4 font-bold text-gray-900">Email</th>
-                  <th className="text-left py-3 px-4 font-bold text-gray-900">Роль</th>
-                  <th className="text-right py-3 px-4 font-bold text-gray-900">Действия</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-bold text-gray-900 text-xs sm:text-sm">Имя</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-bold text-gray-900 text-xs sm:text-sm hidden md:table-cell">Email</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-bold text-gray-900 text-xs sm:text-sm">Роль</th>
+                  <th className="text-right py-2 sm:py-3 px-2 sm:px-4 font-bold text-gray-900 text-xs sm:text-sm">Действия</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user: any) => (
                   <tr key={user.id} className="border-b border-gray-100 hover:bg-red-50 transition-colors">
-                    <td className="py-3 px-4">
-                      <div className="font-medium text-gray-900">
+                    <td className="py-2 sm:py-3 px-2 sm:px-4">
+                      <div className="font-medium text-gray-900 text-sm sm:text-base">
                         {isCoach && (user.is_student || user.is_coach) ? (
                           <button
                             type="button"
@@ -122,30 +123,31 @@ export default function UsersManagement() {
                           <span>{user.last_name} {user.first_name}{(user as any).patronymic ? ` ${(user as any).patronymic}` : ''}</span>
                         )}
                       </div>
-                      <div className="text-sm text-gray-500">{user.username}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{user.username}</div>
+                      <div className="md:hidden text-xs text-gray-600 mt-1 break-all">{user.email}</div>
                     </td>
-                    <td className="py-3 px-4 text-gray-700">{user.email}</td>
-                    <td className="py-3 px-4">
-                      <div className="flex gap-2">
+                    <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-700 hidden md:table-cell text-sm">{user.email}</td>
+                    <td className="py-2 sm:py-3 px-2 sm:px-4">
+                      <div className="flex flex-wrap gap-1 sm:gap-2">
                         {user.is_staff && (
-                          <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                          <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
                             Админ
                           </span>
                         )}
                         {user.is_coach && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                          <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                             Тренер
                           </span>
                         )}
                         {user.is_student && (
-                          <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                          <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                             Ученик
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="py-3 px-4">
-                      <div className="flex justify-end gap-2 flex-wrap">
+                    <td className="py-2 sm:py-3 px-2 sm:px-4">
+                      <div className="flex flex-row items-center justify-end gap-1 sm:gap-2 flex-nowrap">
                         {isCoach && (user.is_student || user.is_coach) && (
                           <Button
                             size="sm"
@@ -155,33 +157,39 @@ export default function UsersManagement() {
                               setShowAchievementForm(true)
                             }}
                             leftIcon={<Award className="w-4 h-4" />}
+                            className="text-xs px-2 py-2 sm:px-3 sm:py-2 h-9 sm:h-auto min-w-[36px] sm:min-w-0 shrink-0 flex-shrink-0"
+                            title="Добавить достижение"
                           >
-                            Добавить достижение
+                            <span className="hidden sm:inline">Добавить достижение</span>
                           </Button>
                         )}
                         {isAdmin && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => { setEditingUser(user); setShowForm(true) }}
-                            leftIcon={<Edit className="w-4 h-4" />}
-                          >
-                            Редактировать
-                          </Button>
-                        )}
-                        {isAdmin && (
-                          <Button
-                            size="sm"
-                            variant="danger"
-                            onClick={() => {
-                              if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
-                                deleteMutation.mutate(user.id)
-                              }
-                            }}
-                            leftIcon={<Trash2 className="w-4 h-4" />}
-                          >
-                            Удалить
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => { setEditingUser(user); setShowForm(true) }}
+                              leftIcon={<Edit className="w-4 h-4" />}
+                              className="text-xs px-2 py-2 sm:px-3 sm:py-2 h-9 sm:h-auto min-w-[36px] sm:min-w-0 shrink-0 flex-shrink-0"
+                              title="Редактировать"
+                            >
+                              <span className="hidden sm:inline">Редактировать</span>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              onClick={() => {
+                                if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                                  deleteMutation.mutate(user.id)
+                                }
+                              }}
+                              leftIcon={<Trash2 className="w-4 h-4" />}
+                              className="text-xs px-2 py-2 sm:px-3 sm:py-2 h-9 sm:h-auto min-w-[36px] sm:min-w-0 shrink-0 flex-shrink-0"
+                              title="Удалить"
+                            >
+                              <span className="hidden sm:inline">Удалить</span>
+                            </Button>
+                          </>
                         )}
                       </div>
                     </td>
@@ -197,27 +205,29 @@ export default function UsersManagement() {
           </div>
         )}
         {totalCount > 0 && (
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-            <p className="text-sm text-gray-600">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
+            <p className="text-xs sm:text-sm text-gray-600">
               Показано {(page - 1) * 10 + 1}–{Math.min(page * 10, totalCount)} из {totalCount}
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-1 sm:gap-2">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={!hasPrevious}
+                className="text-xs"
               >
                 Назад
               </Button>
-              <span className="flex items-center px-3 text-sm text-gray-600">
-                Страница {page} из {totalPages}
+              <span className="flex items-center px-2 sm:px-3 text-xs sm:text-sm text-gray-600">
+                {page}/{totalPages}
               </span>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => setPage((p) => p + 1)}
                 disabled={!hasNext}
+                className="text-xs"
               >
                 Вперёд
               </Button>

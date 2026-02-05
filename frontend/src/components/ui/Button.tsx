@@ -38,9 +38,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
         )}
-        {!loading && leftIcon && <span className="mr-2">{leftIcon}</span>}
+        {!loading && leftIcon && <span className={cn(children ? 'mr-2' : '')}>{leftIcon}</span>}
         {children}
-        {rightIcon && <span className="ml-2">{rightIcon}</span>}
+        {rightIcon && <span className={cn(children ? 'ml-2' : '')}>{rightIcon}</span>}
       </button>
     )
   }

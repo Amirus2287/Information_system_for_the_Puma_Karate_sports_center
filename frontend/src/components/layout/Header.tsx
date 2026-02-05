@@ -27,14 +27,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
               to="/dashboard"
               className="flex items-center gap-1.5 sm:gap-2 lg:gap-4 min-w-0 hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 rounded-lg"
             >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 rounded-lg border-2 border-gray-200 bg-white flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 lg:w-16 lg:h-16 rounded-lg border-2 border-gray-200 bg-white flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
                 <img
                   src={logo}
                   alt="Пума-Каратэ"
-                  className="w-full h-full object-contain p-1"
+                  className="w-full h-full object-contain p-0.5 sm:p-1"
                 />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 hidden xs:block">
                 <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-slate-900 tracking-tight truncate leading-tight">
                   Пума-Каратэ
                 </h1>
@@ -48,14 +48,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 shrink-0">
             <div className="h-8 sm:h-10 w-px bg-gray-300 hidden sm:block"></div>
             
-            <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 bg-gray-50 px-1.5 sm:px-2 lg:px-4 py-1.5 sm:py-2 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 bg-gray-50 px-1 sm:px-2 lg:px-4 py-1 sm:py-2 rounded-lg border border-gray-200">
               <Avatar
                 src={user?.avatar || undefined}
                 alt={`${user?.first_name} ${user?.last_name}`}
-                className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 shrink-0"
+                className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 shrink-0"
                 fallback={`${user?.first_name?.[0] || ''}${user?.last_name?.[0] || ''}`}
               />
-              <div className="hidden md:block min-w-0">
+              <div className="hidden lg:block min-w-0">
                 <p className="font-semibold text-gray-900 text-xs lg:text-sm truncate">
                   {user?.first_name} {user?.last_name}
                 </p>
@@ -70,7 +70,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
               className="p-1.5 sm:p-2 lg:p-2.5 hover:bg-gray-100 rounded-lg transition-colors group touch-manipulation shrink-0"
               title="Настройки"
             >
-              <Settings className="w-4 h-4 text-gray-700 group-hover:text-primary-600 transition-colors" />
+              <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 group-hover:text-primary-600 transition-colors" />
             </button>
             
             <button 

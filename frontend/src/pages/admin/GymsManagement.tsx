@@ -58,36 +58,41 @@ export default function GymsManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Управление залами</h1>
-          <p className="text-gray-600 mt-1">Добавление и редактирование залов для групп</p>
+    <div className="space-y-3 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Управление залами</h1>
+          <p className="text-xs sm:text-sm lg:text-base text-gray-600 mt-0.5 sm:mt-1 hidden sm:block">Добавление и редактирование залов для групп</p>
         </div>
-        <Button onClick={() => { setEditingGym(null); setShowForm(true) }} leftIcon={<Plus />}>
-          Добавить зал
+        <Button 
+          onClick={() => { setEditingGym(null); setShowForm(true) }} 
+          leftIcon={<Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+          className="text-xs sm:text-sm shrink-0 w-full sm:w-auto"
+        >
+          <span className="hidden sm:inline">Добавить зал</span>
+          <span className="sm:hidden">Добавить</span>
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
         {gyms?.length ? (
           gyms.map((gym: any) => (
             <div
               key={gym.id}
-              className="bg-white border-2 border-gray-100 rounded-2xl p-6 hover:border-primary-200 hover:shadow-elegant-lg transition-all"
+              className="bg-white border-2 border-gray-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 hover:border-primary-200 hover:shadow-elegant-lg transition-all"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
+              <div className="flex items-start justify-between mb-3 sm:mb-4">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="w-4 h-4 text-primary-600" />
-                    <h3 className="font-bold text-lg text-gray-900">{gym.name}</h3>
+                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-600 shrink-0" />
+                    <h3 className="font-bold text-base sm:text-lg text-gray-900 break-words">{gym.name}</h3>
                   </div>
                   {gym.address && (
-                    <p className="text-sm text-gray-600 mb-2">{gym.address}</p>
+                    <p className="text-xs sm:text-sm text-gray-600 mb-2 break-words">{gym.address}</p>
                   )}
                   {gym.work_start && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Clock className="w-4 h-4" />
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                      <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                       <span>{formatWorkingHours(gym.work_start, gym.work_end)}</span>
                     </div>
                   )}
@@ -97,28 +102,31 @@ export default function GymsManagement() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 sm:flex-none sm:flex-1"
                   onClick={() => { setEditingGym(gym); setShowForm(true) }}
                   leftIcon={<Edit className="w-4 h-4" />}
                 >
-                  Редактировать
+                  <span className="hidden sm:inline">Редактировать</span>
                 </Button>
-                <button
+                <Button
+                  size="sm"
+                  variant="danger"
                   onClick={() => {
                     if (window.confirm(`Удалить зал «${gym.name}»?`)) {
                       deleteMutation.mutate(gym.id)
                     }
                   }}
-                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Удалить зал"
-                  disabled={deleteMutation.isPending}
-                >
-                  {deleteMutation.isPending ? (
-                    <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                  leftIcon={deleteMutation.isPending ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Trash2 className="w-4 h-4" />
                   )}
-                </button>
+                  className="h-9 sm:h-auto min-w-[36px] sm:min-w-0 px-2 sm:px-3"
+                  title="Удалить зал"
+                  disabled={deleteMutation.isPending}
+                >
+                  <span className="hidden sm:inline">Удалить</span>
+                </Button>
               </div>
             </div>
           ))
