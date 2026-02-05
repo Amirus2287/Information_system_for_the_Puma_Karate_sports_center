@@ -69,6 +69,13 @@ export const trainingsApi = {
   
   getHomeworks: async (params?: any) => {
     const response = await api.get('/api/trainings/homeworks/', { params })
+    const data = response.data
+    // Бэкенд может вернуть список или пагинированный объект { results: [...] }
+    return Array.isArray(data) ? data : (data?.results ?? [])
+  },
+
+  getHomeworkById: async (id: number) => {
+    const response = await api.get(`/api/trainings/homeworks/${id}/`)
     return response.data
   },
   

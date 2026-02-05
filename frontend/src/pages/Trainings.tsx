@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { trainingsApi } from '../api/trainings'
 import { useAuth } from '../hooks/useAuth'
@@ -39,6 +39,16 @@ export default function Trainings() {
     queryFn: () => trainingsApi.getGroups(),
     enabled: !!user,
   })
+
+  // У ученика всегда выбрана только его группа (или первая из нескольких)
+  useEffect(() => {
+    if (!isStudent || !groups?.length) return
+    setSelectedGroup((prev) => {
+      const ids = groups.map((g: any) => String(g.id))
+      if (!prev || !ids.includes(prev)) return String(groups[0].id)
+      return prev
+    })
+  }, [isStudent, groups])
   
   const { data: trainings, isLoading } = useQuery({
     queryKey: ['trainings', selectedGroup, toLocalDateString(weekStart)],
@@ -71,12 +81,12 @@ export default function Trainings() {
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Тренировки</h1>
+    <div className="space-y-4 sm:space-y-6 w-full overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Тренировки</h1>
           <p className="text-gray-600 mt-1">
-            {isCoach ? 'Управление тренировками и группами' : 'Расписание тренировок'}
+            {isCoach ? 'Управление тренировками и группами' : 'Расписание тренировок вашей группы. Во вкладке «Прошедшие» — прошедшие занятия, переключайте неделю для просмотра разных периодов.'}
           </p>
         </div>
         
@@ -90,8 +100,8 @@ export default function Trainings() {
         )}
       </div>
       
-      <div className="space-y-4">
-          <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
+      <div className="space-y-4 w-full overflow-x-hidden">
+          <div className="bg-white border-2 border-gray-100 rounded-2xl p-3 sm:p-4 lg:p-6 shadow-elegant w-full">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-primary-600" />
@@ -99,34 +109,40 @@ export default function Trainings() {
               </div>
             </div>
             
-            <div className="mb-6 p-4 bg-red-50 border-2 border-primary-100 rounded-xl">
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border-2 border-primary-100 rounded-xl">
               <div className="flex items-center gap-2 mb-3">
-                <Filter className="w-4 h-4 text-primary-600" />
-                <h3 className="font-semibold text-gray-900">Фильтры</h3>
+                <Filter className="w-4 h-4 text-primary-600 shrink-0" />
+                <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Фильтры</h3>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Группа
                   </label>
-                  <select
-                    value={selectedGroup}
-                    onChange={(e) => setSelectedGroup(e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-                  >
-                    <option value="">Все группы</option>
-                    {groups?.map((group: any) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name}
-                      </option>
-                    ))}
-                  </select>
+                  {isStudent && groups?.length === 1 ? (
+                    <p className="px-4 py-2 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-900 font-medium w-full">
+                      {groups[0].name}
+                    </p>
+                  ) : (
+                    <select
+                      value={selectedGroup}
+                      onChange={(e) => setSelectedGroup(e.target.value)}
+                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                    >
+                      {!isStudent && <option value="">Все группы</option>}
+                      {groups?.map((group: any) => (
+                        <option key={group.id} value={group.id}>
+                          {group.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Неделя
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                     <button
                       type="button"
                       onClick={() => {
@@ -134,12 +150,12 @@ export default function Trainings() {
                         prev.setDate(prev.getDate() - 7)
                         setWeekStart(prev)
                       }}
-                      className="p-2 rounded-lg border-2 border-gray-200 hover:border-primary-500 hover:bg-red-50 transition-colors"
+                      className="p-1.5 sm:p-2 rounded-lg border-2 border-gray-200 hover:border-primary-500 hover:bg-red-50 transition-colors shrink-0"
                       aria-label="Предыдущая неделя"
                     >
-                      <ChevronLeft className="w-5 h-5 text-gray-600" />
+                      <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                     </button>
-                    <span className="flex-1 text-center font-medium text-gray-900 min-w-[200px]">
+                    <span className="flex-1 text-center font-medium text-gray-900 text-xs sm:text-sm min-w-0 px-1 break-words">
                       {weekStart.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })} — {weekEnd.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
                     <button
@@ -149,22 +165,24 @@ export default function Trainings() {
                         next.setDate(next.getDate() + 7)
                         setWeekStart(next)
                       }}
-                      className="p-2 rounded-lg border-2 border-gray-200 hover:border-primary-500 hover:bg-red-50 transition-colors"
+                      className="p-1.5 sm:p-2 rounded-lg border-2 border-gray-200 hover:border-primary-500 hover:bg-red-50 transition-colors shrink-0"
                       aria-label="Следующая неделя"
                     >
-                      <ChevronRight className="w-5 h-5 text-gray-600" />
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                     </button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => setWeekStart(getWeekMonday(new Date()))}
+                      className="shrink-0 text-xs sm:text-sm"
                     >
-                      Эта неделя
+                      <span className="hidden sm:inline">Эта неделя</span>
+                      <span className="sm:hidden">Сегодня</span>
                     </Button>
                   </div>
                 </div>
               </div>
-              {selectedGroup && (
+              {selectedGroup && !isStudent && (
                 <div className="mt-3 flex items-center gap-2">
                   <Button
                     size="sm"
@@ -222,6 +240,11 @@ export default function Trainings() {
                 {isCoach && tab === 'upcoming' && (
                   <p className="text-gray-400 text-sm mt-2">
                     Создайте первую тренировку, нажав кнопку выше
+                  </p>
+                )}
+                {!isCoach && tab === 'past' && (
+                  <p className="text-gray-400 text-sm mt-2">
+                    Выберите другую неделю стрелками выше, чтобы посмотреть прошедшие занятия
                   </p>
                 )}
               </div>

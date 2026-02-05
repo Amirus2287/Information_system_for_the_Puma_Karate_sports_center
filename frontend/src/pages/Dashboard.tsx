@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../hooks/useAuth'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Trophy, Calendar, Users, TrendingUp, Award, Clock, BookOpen, Newspaper, UserCog } from 'lucide-react'
 import { trainingsApi } from '../api/trainings'
 import { formatTrainingTime, toLocalDate } from '../utils/formatters'
@@ -11,7 +11,6 @@ import { usersApi } from '../api/users'
 export default function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  
   const isAdmin = user?.is_staff
   const isCoach = user?.is_coach || isAdmin
   const isStudent = user?.is_student && !isCoach
@@ -137,8 +136,8 @@ export default function Dashboard() {
   const quickActions = getQuickActions()
   
   return (
-    <div className="space-y-8">
-      <div className="relative bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 rounded-2xl p-4 sm:p-8 text-white shadow-elegant-lg overflow-hidden">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8 w-full overflow-x-hidden">
+      <div className="relative bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 rounded-2xl p-4 sm:p-6 lg:p-8 text-white shadow-elegant-lg overflow-hidden w-full">
         <div className="absolute inset-0 opacity-20">
           <div className="w-full h-full bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.1%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')]"></div>
         </div>
@@ -165,11 +164,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="bg-white border-2 border-gray-100 rounded-2xl p-8 shadow-elegant">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Быстрые действия</h2>
+      <div className="bg-white border-2 border-gray-100 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-elegant w-full overflow-x-hidden">
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Быстрые действия</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {quickActions.map((action, index) => (
             <button
               key={index}
@@ -187,9 +186,9 @@ export default function Dashboard() {
       </div>
       
       {news && news.length > 0 && (
-        <div className="bg-white border-2 border-gray-100 rounded-2xl p-8 shadow-elegant">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Последние новости</h2>
+        <div className="bg-white border-2 border-gray-100 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-elegant w-full overflow-x-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Последние новости</h2>
             {isAdmin && (
               <button 
                 onClick={() => navigate('/admin/news')}
@@ -201,9 +200,10 @@ export default function Dashboard() {
           </div>
           <div className="space-y-4">
             {news.slice(0, 3).map((item: any) => (
-              <div
+              <Link
                 key={item.id}
-                className="p-5 border-2 border-gray-100 rounded-xl hover:border-primary-200 hover:bg-red-50 transition-all"
+                to={`/news/${item.id}`}
+                className="block w-full text-left p-5 border-2 border-gray-100 rounded-xl hover:border-primary-200 hover:bg-red-50 transition-all"
               >
                 <div className="flex items-start gap-3 mb-2">
                   <Newspaper className="w-4 h-4 text-primary-600 flex-shrink-0 mt-1" />
@@ -225,7 +225,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

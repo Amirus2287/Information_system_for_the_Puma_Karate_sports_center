@@ -6,8 +6,10 @@ import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
 import Competitions from './pages/Competitions'
 import CompetitionDetail from './pages/CompetitionDetail'
+import NewsDetail from './pages/NewsDetail'
 import Trainings from './pages/Trainings'
 import Homeworks from './pages/Homeworks'
+import HomeworkDetail from './pages/HomeworkDetail'
 import Journal from './pages/Journal'
 import Settings from './pages/Settings'
 import ProtectedRoute from './components/auth/ProtectedRoute'
@@ -66,8 +68,10 @@ export default function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/competitions" element={<Competitions />} />
                 <Route path="/competitions/:id" element={<CompetitionDetail />} />
+                <Route path="/news/:id" element={<NewsDetail />} />
                 <Route path="/trainings" element={<Trainings />} />
                 <Route path="/homeworks" element={<Homeworks />} />
+                <Route path="/homeworks/:id" element={<HomeworkDetail />} />
                 <Route path="/journal" element={<Journal />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/groups" element={<Groups />} />

@@ -1,10 +1,11 @@
-import api from './axiosConfig'
+import api, { fetchFreshCsrfToken } from './axiosConfig'
 import toast from 'react-hot-toast'
 
 export const authApi = {
   login: async (username: string, password: string) => {
     try {
       const response = await api.post('/api/auth/login/', { username, password })
+      await fetchFreshCsrfToken()
       return response.data
     } catch (error: any) {
       const message = error.response?.data?.error || 
@@ -32,6 +33,7 @@ export const authApi = {
         console.log('Registering with data:', { ...data, password: '***' })
       }
       const response = await api.post('/api/auth/register/', data)
+      await fetchFreshCsrfToken()
       if (import.meta.env.DEV) {
         console.log('Register response:', response.data)
       }

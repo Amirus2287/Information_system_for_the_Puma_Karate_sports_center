@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { trainingsApi } from '../api/trainings'
 import { formatTrainingTime, toLocalDate, toLocalDateString } from '../utils/formatters'
@@ -34,6 +34,16 @@ export default function Journal() {
     queryFn: () => trainingsApi.getGroups(),
     enabled: !!user,
   })
+
+  // У ученика всегда выбрана только его группа (или первая из нескольких)
+  useEffect(() => {
+    if (!isStudent || !groups?.length) return
+    setSelectedGroup((prev) => {
+      const ids = groups.map((g: any) => String(g.id))
+      if (!prev || !ids.includes(prev)) return String(groups[0].id)
+      return prev
+    })
+  }, [isStudent, groups])
   
   const { data: trainings, isLoading } = useQuery({
     queryKey: ['trainings', 'journal', toLocalDateString(weekStart), selectedGroup],
@@ -110,63 +120,77 @@ export default function Journal() {
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Электронный журнал</h1>
-          <p className="text-gray-600 mt-1">
+    <div className="space-y-4 sm:space-y-6 w-full overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Электронный журнал</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
             {isCoach 
               ? 'Календарь тренировок. Нажмите на день, чтобы создать тренировку' 
-              : 'Расписание тренировок на неделю'}
+              : 'Расписание тренировок вашей группы. Переключайте недели стрелками, чтобы посмотреть прошедшие занятия.'}
           </p>
         </div>
         
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={goToToday}>
+        <div className="flex gap-2 shrink-0">
+          <Button variant="outline" onClick={goToToday} className="text-xs sm:text-sm">
             Сегодня
           </Button>
           {isCoach && (
-            <Button onClick={() => { setSelectedDate(new Date()); setShowTrainingForm(true) }} leftIcon={<Plus />}>
-              Новая тренировка
+            <Button onClick={() => { setSelectedDate(new Date()); setShowTrainingForm(true) }} leftIcon={<Plus />} className="text-xs sm:text-sm">
+              <span className="hidden sm:inline">Новая тренировка</span>
+              <span className="sm:hidden">Новая</span>
             </Button>
           )}
         </div>
       </div>
       
-      <div className="bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-elegant">
+      <div className="bg-white border-2 border-gray-100 rounded-2xl p-3 sm:p-4 lg:p-6 shadow-elegant w-full overflow-x-hidden">
         <div className="mb-4 p-4 bg-gray-50 border-2 border-gray-100 rounded-xl">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Группа
           </label>
-          <select
-            value={selectedGroup}
-            onChange={(e) => setSelectedGroup(e.target.value)}
-            className="w-full max-w-xs px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-          >
-            <option value="">Все группы</option>
-            {groups?.map((group: any) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
-              </option>
-            ))}
-          </select>
+          {isStudent && groups?.length === 1 ? (
+            <p className="px-4 py-2 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-900 font-medium w-full max-w-xs">
+              {groups[0].name}
+            </p>
+          ) : (
+            <select
+              value={selectedGroup}
+              onChange={(e) => setSelectedGroup(e.target.value)}
+              className="w-full max-w-xs px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+            >
+              {!isStudent && <option value="">Все группы</option>}
+              {groups?.map((group: any) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
+          )}
+          {isStudent && (
+            <p className="mt-2 text-sm text-gray-500">
+              Вы видите только занятия своей группы. Используйте стрелки «Предыдущая / Следующая неделя», чтобы посмотреть прошедшие или будущие занятия.
+            </p>
+          )}
         </div>
         
-        <div className="flex items-center justify-between mb-4">
-          <Button variant="outline" onClick={goToPreviousWeek} leftIcon={<ChevronLeft className="w-4 h-4" />}>
-            Предыдущая неделя
+        <div className="flex items-center justify-between mb-4 gap-2">
+          <Button variant="outline" onClick={goToPreviousWeek} leftIcon={<ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />} className="text-xs sm:text-sm px-2 sm:px-4 shrink-0">
+            <span className="hidden sm:inline">Предыдущая неделя</span>
+            <span className="sm:hidden">Назад</span>
           </Button>
           
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-gray-900">{formatWeekRange()}</h2>
+          <div className="text-center min-w-0 flex-1 px-1">
+            <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-gray-900 break-words">{formatWeekRange()}</h2>
           </div>
           
-          <Button variant="outline" onClick={goToNextWeek} rightIcon={<ChevronRight className="w-4 h-4" />}>
-            Следующая неделя
+          <Button variant="outline" onClick={goToNextWeek} rightIcon={<ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />} className="text-xs sm:text-sm px-2 sm:px-4 shrink-0">
+            <span className="hidden sm:inline">Следующая неделя</span>
+            <span className="sm:hidden">Вперёд</span>
           </Button>
         </div>
         
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 overflow-x-auto">
           {weekDays.map((day, index) => {
             const dayTrainings = getTrainingsForDay(day)
             const isToday = day.toDateString() === new Date().toDateString()

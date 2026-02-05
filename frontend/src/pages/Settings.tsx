@@ -116,33 +116,33 @@ export default function Settings() {
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Настройки</h1>
-          <p className="text-gray-600 mt-1">Ваша личная информация</p>
+    <div className="space-y-4 sm:space-y-6 w-full overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Настройки</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Ваша личная информация</p>
         </div>
-        <Button variant="outline" onClick={() => setShowProfileForm(true)}>
+        <Button variant="outline" onClick={() => setShowProfileForm(true)} className="shrink-0 text-xs sm:text-sm">
           Редактировать профиль
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
-            <div className="flex items-center gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+          <div className="bg-white border-2 border-gray-100 rounded-2xl p-4 sm:p-6 shadow-elegant w-full overflow-x-hidden">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
               <Avatar
                 src={user?.avatar || undefined}
                 alt={`${user?.first_name} ${user?.last_name}`}
-                className="w-24 h-24 shrink-0"
+                className="w-20 h-20 sm:w-24 sm:h-24 shrink-0"
                 fallback={`${user?.first_name?.[0] || ''}${user?.last_name?.[0] || ''}`}
               />
               
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 break-words">
                   {user?.first_name} {user?.last_name}
                 </h2>
-                <p className="text-gray-600 mb-3">@{user?.username}</p>
+                <p className="text-sm sm:text-base text-gray-600 mb-3 break-words">@{user?.username}</p>
                 
                 <div className="flex gap-2 mb-4">
                   {getRoleBadges().map((badge, index) => (

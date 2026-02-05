@@ -176,14 +176,18 @@ class HomeworkViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        is_coach = user.is_coach or user.is_staff
-        if user.is_student and not is_coach:
-            return Homework.objects.filter(student=user)
-        elif is_coach and not user.is_staff:
-            return Homework.objects.filter(
-                training__group__coach=user
-            )
-        return Homework.objects.all()
+        # Админ видит все ДЗ; тренер — только ДЗ своих групп; остальные — только свои (student=user)
+        if user.is_staff:
+            return Homework.objects.all()
+        if user.is_coach:
+            return Homework.objects.filter(training__group__coach=user)
+        return Homework.objects.filter(student=user)
+    
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        # Для отладки: в ответе видно, под каким пользователем идёт запрос (сверьте с полем "Ученик" в админке ДЗ)
+        response['X-Current-User-Id'] = str(request.user.id)
+        return response
 
 class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all()

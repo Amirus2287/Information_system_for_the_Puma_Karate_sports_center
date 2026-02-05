@@ -72,18 +72,18 @@ export default function Groups() {
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div>
+    <div className="space-y-4 sm:space-y-6 w-full overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Управление группами</h1>
           <p className="text-gray-600 mt-1 text-sm sm:text-base">Создание и управление группами тренировок</p>
         </div>
-        <Button onClick={() => { setEditingGroup(null); setShowGroupForm(true) }} leftIcon={<Plus />} className="w-full sm:w-auto">
+        <Button onClick={() => { setEditingGroup(null); setShowGroupForm(true) }} leftIcon={<Plus />} className="w-full sm:w-auto shrink-0">
           Создать группу
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
         {groups?.length ? (
           groups.map((group: any) => (
             <div

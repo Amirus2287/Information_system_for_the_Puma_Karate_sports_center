@@ -12,6 +12,10 @@ const registerSchema = z.object({
   last_name: z.string().min(1, 'Введите фамилию'),
   email: z.string().email('Введите корректный email'),
   phone: z.string().optional(),
+  age: z.union([
+    z.string().transform((v) => (v === '' ? undefined : Number(v))),
+    z.number(),
+  ]).optional().refine((v) => v === undefined || (Number.isInteger(v) && v >= 1 && v <= 120), 'Укажите возраст от 1 до 120'),
 }).refine((data) => data.password === data.password_confirm, {
   message: 'Пароли не совпадают',
   path: ['password_confirm'],
@@ -19,7 +23,15 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>
 
-type RegisterSubmitData = Omit<RegisterFormData, 'password_confirm'>
+function ageToDateOfBirth(age: number): string {
+  const d = new Date()
+  d.setFullYear(d.getFullYear() - age)
+  d.setMonth(0)
+  d.setDate(1)
+  return d.toISOString().slice(0, 10)
+}
+
+type RegisterSubmitData = Omit<RegisterFormData, 'password_confirm' | 'age'> & { date_of_birth?: string }
 
 interface RegisterFormProps {
   onSubmit: (data: RegisterSubmitData) => void
@@ -31,7 +43,11 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
   })
   
   const handleFormSubmit = (data: RegisterFormData) => {
-    const { password_confirm, ...submitData } = data
+    const { password_confirm, age, ...rest } = data
+    const submitData: RegisterSubmitData = { ...rest }
+    if (typeof age === 'number' && age >= 1) {
+      submitData.date_of_birth = ageToDateOfBirth(age)
+    }
     onSubmit(submitData)
   }
   
@@ -68,6 +84,16 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
         label="Телефон"
         {...register('phone')}
         error={errors.phone?.message}
+      />
+
+      <Input
+        type="number"
+        min={1}
+        max={120}
+        placeholder="Полных лет"
+        label="Возраст"
+        {...register('age')}
+        error={errors.age?.message}
       />
       
       <Input

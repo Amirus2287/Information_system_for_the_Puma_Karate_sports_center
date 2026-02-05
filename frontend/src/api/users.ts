@@ -88,6 +88,11 @@ export const usersApi = {
     const response = await api.get('/api/auth/news/', { params })
     return response.data
   },
+
+  getNewsById: async (id: number) => {
+    const response = await api.get(`/api/auth/news/${id}/`)
+    return response.data
+  },
   
   createNews: async (data: any) => {
     const response = await api.post('/api/auth/news/', data)

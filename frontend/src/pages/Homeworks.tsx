@@ -4,8 +4,10 @@ import { trainingsApi } from '../api/trainings'
 import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
 import HomeworkForm from '../components/trainings/HomeworkForm'
+import { Link } from 'react-router-dom'
 import { Plus, BookOpen, CheckCircle, XCircle, Calendar, User, Users, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { toLocalDateString } from '../utils/formatters'
 
 const PAGE_SIZE = 10
 
@@ -56,9 +58,9 @@ export default function Homeworks() {
   }, [selectedGroup])
   
   const { data: allHomeworks } = useQuery({
-    queryKey: ['homeworks'],
+    queryKey: ['homeworks', user?.id],
     queryFn: () => trainingsApi.getHomeworks(),
-    enabled: !!user,
+    enabled: !!user && isCoach,
   })
   
   const filteredHomeworks = selectedGroup && groupStudents 
@@ -103,15 +105,15 @@ export default function Homeworks() {
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Домашние задания</h1>
-          <p className="text-gray-600 mt-1">Управление домашними заданиями по группам</p>
+    <div className="space-y-4 sm:space-y-6 w-full overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Домашние задания</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Управление домашними заданиями по группам</p>
         </div>
       </div>
       
-      <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
+      <div className="bg-white border-2 border-gray-100 rounded-2xl p-3 sm:p-4 lg:p-6 shadow-elegant w-full overflow-x-hidden">
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Выберите группу
@@ -361,14 +363,17 @@ function HomeworkItem({ homework: hw, isCoach }: { homework: any; isCoach: boole
         : 'border-gray-100 bg-white hover:border-primary-200'
     }`}>
       <div className="flex items-start justify-between">
-        <div className="flex-1">
+        <Link
+          to={`/homeworks/${hw.id}`}
+          className="flex-1 min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
+        >
           <div className="flex items-start gap-2 mb-2">
             {hw.completed ? (
               <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
             ) : (
               <XCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
             )}
-            <p className="font-medium text-gray-900 text-sm flex-1">
+            <p className="font-medium text-gray-900 text-sm flex-1 line-clamp-2">
               {hw.task}
             </p>
           </div>
@@ -390,13 +395,14 @@ function HomeworkItem({ homework: hw, isCoach }: { homework: any; isCoach: boole
               </div>
             )}
           </div>
-        </div>
+        </Link>
         
-        <div className="flex flex-col items-end gap-2 ml-4">
+        <div className="flex flex-col items-end gap-2 ml-4 flex-shrink-0">
           <div className="flex items-center gap-2">
             {isCoach && (
               <button
-                onClick={handleDelete}
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete() }}
                 disabled={deleteMutation.isPending}
                 className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
                 title="Удалить домашнее задание"
@@ -411,7 +417,7 @@ function HomeworkItem({ homework: hw, isCoach }: { homework: any; isCoach: boole
             <Button
               size="sm"
               variant={hw.completed ? "outline" : "primary"}
-              onClick={handleToggleCompleted}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleCompleted() }}
               disabled={toggleCompletedMutation.isPending}
               leftIcon={hw.completed ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
             >
@@ -439,12 +445,39 @@ function StudentHomeworksView() {
   const { user } = useAuth()
   const isCoach = !!(user?.is_coach || user?.is_staff)
   const [page, setPage] = useState(1)
+  const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming')
 
-  const { data: homeworks, isLoading } = useQuery({
-    queryKey: ['homeworks'],
+  const { data: homeworks, isLoading, isError, refetch } = useQuery({
+    queryKey: ['homeworks', 'student', user?.id],
     queryFn: () => trainingsApi.getHomeworks(),
+    enabled: !!user,
   })
-  
+
+  const allHomeworks = Array.isArray(homeworks) ? homeworks : []
+  const today = toLocalDateString(new Date())
+  const byDeadline = allHomeworks.filter((hw: any) => {
+    const deadline = hw.deadline ? String(hw.deadline).slice(0, 10) : ''
+    return deadline >= today
+  })
+  const pastDeadline = allHomeworks.filter((hw: any) => {
+    const deadline = hw.deadline ? String(hw.deadline).slice(0, 10) : ''
+    return deadline < today
+  })
+  const filteredHomeworks = tab === 'upcoming' ? byDeadline : pastDeadline
+  const totalCount = allHomeworks.length
+  const filteredCount = filteredHomeworks.length
+  const totalPages = filteredCount ? Math.ceil(filteredCount / PAGE_SIZE) : 1
+
+  useEffect(() => {
+    if (page > totalPages && totalPages >= 1) {
+      setPage(totalPages)
+    }
+  }, [page, totalPages])
+
+  useEffect(() => {
+    setPage(1)
+  }, [tab])
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -455,35 +488,43 @@ function StudentHomeworksView() {
       </div>
     )
   }
-  
-  const filteredHomeworks = homeworks || []
-  const completedCount = filteredHomeworks.filter((hw: any) => hw.completed).length
-  const pendingCount = filteredHomeworks.filter((hw: any) => !hw.completed).length
-  const totalCount = filteredHomeworks.length
-  const totalPages = totalCount ? Math.ceil(totalCount / PAGE_SIZE) : 1
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Мои домашние задания</h1>
+          <p className="text-gray-600 mt-1">Ваши домашние задания</p>
+        </div>
+        <div className="flex flex-col items-center justify-center min-h-[300px] bg-white border-2 border-gray-100 rounded-2xl p-8">
+          <p className="text-gray-600 mb-4">Не удалось загрузить задания</p>
+          <Button onClick={() => refetch()} variant="outline">
+            Повторить
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  const completedCount = allHomeworks.filter((hw: any) => hw.completed).length
+  const pendingCount = allHomeworks.filter((hw: any) => !hw.completed).length
   const hasNext = page < totalPages
   const hasPrevious = page > 1
-  const pageStart = totalCount ? (page - 1) * PAGE_SIZE + 1 : 0
-  const pageEnd = Math.min(page * PAGE_SIZE, totalCount)
+  const pageStart = filteredCount ? (page - 1) * PAGE_SIZE + 1 : 0
+  const pageEnd = Math.min(page * PAGE_SIZE, filteredCount)
   const pagedHomeworks = filteredHomeworks.slice(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE
   )
-
-  useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages)
-    }
-  }, [page, totalPages])
   
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Мои домашние задания</h1>
-        <p className="text-gray-600 mt-1">Ваши домашние задания</p>
+    <div className="space-y-4 sm:space-y-6 w-full overflow-x-hidden">
+      <div className="min-w-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Мои домашние задания</h1>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">Домашние задания, заданные вам тренером</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div className="bg-white border-2 border-gray-100 rounded-xl p-4 shadow-elegant">
           <div className="flex items-center gap-3">
             <BookOpen className="w-8 h-8 text-primary-600" />
@@ -513,8 +554,33 @@ function StudentHomeworksView() {
         </div>
       </div>
       
-      <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
-        {totalCount > 0 ? (
+      <div className="bg-white border-2 border-gray-100 rounded-2xl p-3 sm:p-4 lg:p-6 shadow-elegant w-full overflow-x-hidden">
+        <div className="flex border-b-2 border-gray-200 mb-4 sm:mb-6">
+          <button
+            type="button"
+            onClick={() => setTab('upcoming')}
+            className={`px-4 py-3 font-medium transition-colors ${
+              tab === 'upcoming'
+                ? 'text-primary-600 border-b-2 border-primary-500 -mb-0.5'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Ближайшие
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('past')}
+            className={`px-4 py-3 font-medium transition-colors ${
+              tab === 'past'
+                ? 'text-primary-600 border-b-2 border-primary-500 -mb-0.5'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Прошедшие
+          </button>
+        </div>
+
+        {filteredCount > 0 ? (
           <div className="space-y-4">
             {pagedHomeworks.map((hw: any) => (
               <HomeworkItem key={hw.id} homework={hw} isCoach={isCoach} />
@@ -524,14 +590,19 @@ function StudentHomeworksView() {
           <div className="text-center py-12">
             <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg font-medium">
-              Нет домашних заданий
+              {tab === 'upcoming' ? 'Нет предстоящих заданий' : 'Нет прошедших заданий'}
+            </p>
+            <p className="text-gray-400 text-sm mt-2">
+              {tab === 'upcoming'
+                ? 'Задания со сроком сдачи сегодня или позже'
+                : 'Задания со сроком сдачи в прошлом'}
             </p>
           </div>
         )}
-        {totalCount > PAGE_SIZE && (
+        {filteredCount > PAGE_SIZE && (
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
             <p className="text-sm text-gray-600">
-              Показано {pageStart}–{pageEnd} из {totalCount}
+              Показано {pageStart}–{pageEnd} из {filteredCount}
             </p>
             <div className="flex gap-2">
               <Button

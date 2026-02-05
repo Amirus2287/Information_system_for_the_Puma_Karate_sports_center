@@ -44,36 +44,44 @@ export default function CompetitionDetail() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link
-          to="/competitions"
-          className="p-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-          title="Назад к соревнованиям"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">{competition.name}</h1>
-          <p className="text-gray-600 mt-1">Подробная информация о соревновании</p>
+    <div className="space-y-4 sm:space-y-6 w-full overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+          <Link
+            to="/competitions"
+            className="p-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors shrink-0"
+            title="Назад к соревнованиям"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 break-words">{competition.name}</h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">Подробная информация о соревновании</p>
+          </div>
         </div>
-        {isCoach && (
-          <Button
-            variant="outline"
-            leftIcon={<Pencil className="w-4 h-4" />}
-            onClick={() => setShowForm(true)}
-          >
-            Редактировать
-          </Button>
-        )}
-        {competition.is_active && user?.is_student && !isCoach && (
-          <Button
-            leftIcon={<UserPlus className="w-4 h-4" />}
-            onClick={() => setShowRegistration(true)}
-          >
-            Зарегистрироваться
-          </Button>
-        )}
+        <div className="flex gap-2 shrink-0">
+          {isCoach && (
+            <Button
+              variant="outline"
+              leftIcon={<Pencil className="w-4 h-4" />}
+              onClick={() => setShowForm(true)}
+              className="text-xs sm:text-sm"
+            >
+              <span className="hidden sm:inline">Редактировать</span>
+              <span className="sm:hidden">Изменить</span>
+            </Button>
+          )}
+          {competition.is_active && user?.is_student && !isCoach && (
+            <Button
+              leftIcon={<UserPlus className="w-4 h-4" />}
+              onClick={() => setShowRegistration(true)}
+              className="text-xs sm:text-sm"
+            >
+              <span className="hidden sm:inline">Зарегистрироваться</span>
+              <span className="sm:hidden">Участвовать</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {showForm && (
@@ -92,7 +100,7 @@ export default function CompetitionDetail() {
         />
       )}
 
-      <div className="bg-white border-2 border-gray-100 rounded-2xl p-8 shadow-elegant">
+      <div className="bg-white border-2 border-gray-100 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-elegant w-full overflow-x-hidden">
         <div className="flex items-center gap-3 mb-6">
           <div className="bg-gradient-to-br from-primary-500 to-primary-600 p-3 rounded-xl">
             <Trophy className="w-8 h-8 text-white" />

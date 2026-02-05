@@ -21,6 +21,27 @@ function getCsrfToken(): string | null {
 
 let csrfTokenPromise: Promise<string | null> | null = null
 
+/** Сбросить кэш CSRF (вызывать после логина/регистрации — токен при этом обновляется) */
+export function resetCsrfCache() {
+  csrfTokenPromise = null
+}
+
+/** Запросить свежий CSRF-токен с сервера (после входа обязателен для последующих POST) */
+export async function fetchFreshCsrfToken(): Promise<string | null> {
+  resetCsrfCache()
+  const csrfUrl = import.meta.env.DEV || API_URL === ''
+    ? '/api/auth/csrf-token/'
+    : `${API_URL || 'http://localhost:8000'}/api/auth/csrf-token/`
+  try {
+    const response = await axios.get(csrfUrl, { withCredentials: true })
+    const token = response.data?.csrfToken || getCsrfToken()
+    if (token) csrfTokenPromise = Promise.resolve(token)
+    return token
+  } catch {
+    return getCsrfToken()
+  }
+}
+
 async function ensureCsrfToken(): Promise<string | null> {
   let token = getCsrfToken()
   if (token) {
@@ -35,7 +56,7 @@ async function ensureCsrfToken(): Promise<string | null> {
     csrfTokenPromise = axios.get(csrfUrl, {
       withCredentials: true
     }).then(response => {
-      const token = response.data.csrfToken || getCsrfToken()
+      const token = response.data?.csrfToken || getCsrfToken()
       return token
     }).catch(() => {
       return getCsrfToken()
@@ -95,7 +116,7 @@ api.interceptors.response.use(
     }
     return response
   },
-  (error) => {
+  async (error) => {
     if (import.meta.env.DEV && error.config?.url?.includes('/register/') || error.config?.url?.includes('/login/')) {
       console.error('API Error:', {
         url: error.config?.url,
@@ -125,12 +146,31 @@ api.interceptors.response.use(
       }
     }
     
-    if (error.response?.status === 403 && error.response?.data?.detail?.includes('CSRF')) {
-      toast.error('Ошибка CSRF токена. Попробуйте обновить страницу.')
+    if (error.response?.status === 403 && String(error.response?.data?.detail || '').toLowerCase().includes('csrf')) {
+      const config = error.config
+      if (config && !config._retryCsrf) {
+        config._retryCsrf = true
+        try {
+          const res = await retryWithFreshCsrf(config)
+          return res
+        } catch (retryErr) {
+          toast.error('Ошибка CSRF токена. Обновите страницу и войдите снова.')
+        }
+      } else {
+        toast.error('Ошибка CSRF токена. Обновите страницу и войдите снова.')
+      }
     }
     
     return Promise.reject(error)
   }
 )
+
+/** Повторить запрос с обновлённым CSRF (для перехватчика при 403 CSRF) */
+async function retryWithFreshCsrf(originalConfig: any): Promise<any> {
+  await fetchFreshCsrfToken()
+  const token = await ensureCsrfToken()
+  if (token) originalConfig.headers['X-CSRFToken'] = token
+  return api.request(originalConfig)
+}
 
 export default api
