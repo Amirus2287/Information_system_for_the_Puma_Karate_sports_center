@@ -1,10 +1,10 @@
 # Build stage
-FROM oven/bun:1.2.19 AS builder
+FROM node:20-bullseye AS builder
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+COPY package.json package-lock.json* ./
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 COPY . .
 
@@ -12,7 +12,7 @@ COPY . .
 ARG VITE_API_URL
 ENV VITE_API_URL=${VITE_API_URL}
 
-RUN bun ./node_modules/typescript/lib/tsc.js && bun ./node_modules/vite/bin/vite.js build
+RUN npm run build
 
 # Production stage — nginx
 FROM nginx:alpine
