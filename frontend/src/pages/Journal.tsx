@@ -123,11 +123,11 @@ export default function Journal() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-0">
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Электронный журнал</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">
-            {isCoach 
-              ? 'Календарь тренировок. Нажмите на день, чтобы создать тренировку' 
-              : 'Расписание тренировок вашей группы. Переключайте дни стрелками, чтобы посмотреть прошедшие занятия.'}
-          </p>
+          {isCoach && (
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
+              Календарь тренировок. Нажмите на день, чтобы создать тренировку
+            </p>
+          )}
         </div>
         
         <div className="flex gap-2 shrink-0">
@@ -165,11 +165,6 @@ export default function Journal() {
                 </option>
               ))}
             </select>
-          )}
-          {isStudent && (
-            <p className="mt-2 text-sm text-gray-500">
-              Вы видите только занятия своей группы. Используйте стрелки «Предыдущий / Следующий день», чтобы посмотреть прошедшие или будущие занятия.
-            </p>
           )}
         </div>
         
