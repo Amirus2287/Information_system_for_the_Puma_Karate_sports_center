@@ -12,6 +12,7 @@ export default function UsersManagement() {
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const isCoach = user?.is_coach || user?.is_staff
+  const isAdmin = user?.is_staff
   const [editingUser, setEditingUser] = useState<any>(null)
   const [showForm, setShowForm] = useState(false)
   const [showAchievementForm, setShowAchievementForm] = useState(false)
@@ -67,9 +68,11 @@ export default function UsersManagement() {
           <h1 className="text-3xl font-bold text-gray-900">Управление пользователями</h1>
           <p className="text-gray-600 mt-1">Добавление и редактирование пользователей системы</p>
         </div>
-        <Button onClick={() => { setEditingUser(null); setShowForm(true) }} leftIcon={<Plus />}>
-          Добавить пользователя
-        </Button>
+        {isAdmin && (
+          <Button onClick={() => { setEditingUser(null); setShowForm(true) }} leftIcon={<Plus />}>
+            Добавить пользователя
+          </Button>
+        )}
       </div>
       
       <div className="bg-white border-2 border-gray-100 rounded-xl p-4">
@@ -156,26 +159,30 @@ export default function UsersManagement() {
                             Добавить достижение
                           </Button>
                         )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => { setEditingUser(user); setShowForm(true) }}
-                          leftIcon={<Edit className="w-4 h-4" />}
-                        >
-                          Редактировать
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onClick={() => {
-                            if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
-                              deleteMutation.mutate(user.id)
-                            }
-                          }}
-                          leftIcon={<Trash2 className="w-4 h-4" />}
-                        >
-                          Удалить
-                        </Button>
+                        {isAdmin && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => { setEditingUser(user); setShowForm(true) }}
+                            leftIcon={<Edit className="w-4 h-4" />}
+                          >
+                            Редактировать
+                          </Button>
+                        )}
+                        {isAdmin && (
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={() => {
+                              if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                                deleteMutation.mutate(user.id)
+                              }
+                            }}
+                            leftIcon={<Trash2 className="w-4 h-4" />}
+                          >
+                            Удалить
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -45,11 +45,8 @@ class UserViewSet(viewsets.ModelViewSet):
         if user.is_staff:
             return User.objects.all().order_by('-is_staff', '-is_coach', 'last_name', 'first_name')
         elif user.is_coach:
-            student_ids = GroupStudent.objects.filter(
-                group__coach=user,
-                is_active=True
-            ).values_list('student_id', flat=True)
-            return User.objects.filter(id__in=student_ids)
+            # Тренеры теперь видят всех пользователей
+            return User.objects.all().order_by('-is_staff', '-is_coach', 'last_name', 'first_name')
         return User.objects.filter(id=user.id)
     
     def get_permissions(self):
@@ -82,13 +79,8 @@ class ProfileViewSet(viewsets.ModelViewSet):
         if user.is_staff:
             return Profile.objects.all()
         if user.is_coach:
-            from trainings.models import GroupStudent
-            student_ids = list(GroupStudent.objects.filter(
-                group__coach=user,
-                is_active=True
-            ).values_list('student_id', flat=True).distinct())
-            student_ids = list(student_ids) + [user.id]
-            return Profile.objects.filter(user_id__in=student_ids)
+            # Тренеры теперь видят все профили
+            return Profile.objects.all()
         return Profile.objects.filter(user=user)
     
     @action(detail=False, methods=['get'])
@@ -114,7 +106,10 @@ class AchievementViewSet(viewsets.ModelViewSet):
         return Achievement.objects.all()
     
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['create']:
+            # Разрешаем всем авторизованным пользователям создавать достижения
+            return [permissions.IsAuthenticated()]
+        if self.action in ['update', 'partial_update', 'destroy']:
             return [IsCoachOrAdmin()]
         return [permissions.IsAuthenticated()]
 

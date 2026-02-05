@@ -20,11 +20,11 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
   
   const coachNavItems = [
     { to: '/groups', icon: Users, label: 'Группы' },
+    { to: '/admin/users', icon: UserCog, label: 'Пользователи' },
   ]
   
   const adminNavItems = [
     { to: '/admin/news', icon: Newspaper, label: 'Новости' },
-    { to: '/admin/users', icon: UserCog, label: 'Пользователи' },
     { to: '/admin/gyms', icon: MapPin, label: 'Залы' },
   ]
   

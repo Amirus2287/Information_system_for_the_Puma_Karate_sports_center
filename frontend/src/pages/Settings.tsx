@@ -3,14 +3,17 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../hooks/useAuth'
 import { trainingsApi } from '../api/trainings'
 import { competitionsApi } from '../api/competitions'
+import { usersApi } from '../api/users'
 import Button from '../components/ui/Button'
 import ProfileForm from '../components/profile/ProfileForm'
+import AchievementForm from '../components/achievements/AchievementForm'
 import Avatar from '../components/ui/Avatar'
-import { Calendar, Target, Trophy, TrendingUp } from 'lucide-react'
+import { Calendar, Target, Trophy, TrendingUp, Award, Plus } from 'lucide-react'
 
 export default function Settings() {
   const { user } = useAuth()
   const [showProfileForm, setShowProfileForm] = useState(false)
+  const [showAchievementForm, setShowAchievementForm] = useState(false)
   const isStudent = user?.is_student && !user?.is_coach && !user?.is_staff
   const isCoach = user?.is_coach || user?.is_staff
   
@@ -79,6 +82,12 @@ export default function Settings() {
   const { data: competitions } = useQuery({
     queryKey: ['competitions', 'stats'],
     queryFn: () => competitionsApi.getCompetitions(),
+    enabled: !!user,
+  })
+  
+  const { data: achievements } = useQuery({
+    queryKey: ['achievements', 'user', user?.id],
+    queryFn: () => usersApi.getAchievements({ user: user?.id }),
     enabled: !!user,
   })
   
@@ -206,6 +215,65 @@ export default function Settings() {
               </div>
             </div>
           </div>
+          
+          <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-elegant">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Award className="w-4 h-4 text-primary-600" />
+                <h3 className="font-bold text-gray-900">Достижения</h3>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowAchievementForm(true)}
+                leftIcon={<Plus className="w-4 h-4" />}
+              >
+                Добавить
+              </Button>
+            </div>
+            
+            {achievements && achievements.length > 0 ? (
+              <div className="space-y-4">
+                {achievements.map((achievement: any) => {
+                  const imageUrl = achievement.image 
+                    ? (achievement.image.startsWith('http') 
+                        ? achievement.image 
+                        : achievement.image.startsWith('/') ? achievement.image : `/${achievement.image}`)
+                    : null
+                  const achievementDate = new Date(achievement.date).toLocaleDateString('ru-RU', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })
+                  return (
+                    <div key={achievement.id} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
+                      <div className="flex justify-between items-start gap-2 mb-2">
+                        <span className="font-medium text-gray-900">{achievement.title}</span>
+                        <span className="text-gray-500 shrink-0 text-xs">{achievementDate}</span>
+                      </div>
+                      {achievement.description && (
+                        <p className="text-sm text-gray-600 mb-2">{achievement.description}</p>
+                      )}
+                      {imageUrl && (
+                        <div className="mt-2">
+                          <img
+                            src={imageUrl}
+                            alt={achievement.title}
+                            className="w-full max-w-md h-auto rounded-lg border border-gray-200 object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none'
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-4">Нет достижений</p>
+            )}
+          </div>
         </div>
       </div>
       
@@ -213,6 +281,14 @@ export default function Settings() {
         <ProfileForm 
           open={showProfileForm} 
           onClose={() => setShowProfileForm(false)} 
+        />
+      )}
+      
+      {showAchievementForm && (
+        <AchievementForm
+          open={showAchievementForm}
+          onClose={() => setShowAchievementForm(false)}
+          studentId={user?.id}
         />
       )}
     </div>
